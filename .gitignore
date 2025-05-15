@@ -4,7 +4,7 @@
 
 # Ignore Terraform directories with plugins and cache
 .terraform/
-terraform/.terraform.lock.hcl
+.terraform.lock.hcl
 
 # Ignore crash logs
 crash.log
