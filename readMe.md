@@ -38,3 +38,15 @@ This guide covers the steps to install Terraform, configure AWS credentials from
    - terraform init
    - terraform plan
    - terraform apply
+
+
+## 2. How to upload File to S3 via REST method:
+
+1. Sign-in in to academy
+2. create a bucket and name it ```assignment3-51-bucket```
+3. create a lambda function and copy the code from ```lambda_function.py```
+4. create a new api request using ```api_gateway```
+5. generate image data in base64 using function provided in ```fileConverter.py```
+6. test the api in test section inside AWS academy.
+
+
