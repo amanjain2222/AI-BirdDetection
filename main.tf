@@ -17,32 +17,7 @@ resource "aws_dynamodb_table" "UploadedFilesTable" {
     name = "FileId" # The UUID for the file? To be discussed
     type = "S"
   }
-
-  attribute {
-    name = "FileType" # Image/Video/Audio
-    type = "S"
-  }
-
-  attribute {
-    name = "FileUrl" # The URL of full-sized image
-    type = "S"
-  }
-
-  attribute {
-    name = "FileThumbUrl" # The URL of thunbnail image
-    type = "S"
-  }
-
-  attribute {
-    name = "FileTags" # {"crow": 3}
-    type = "M"
-  }
-
-  attribute {
-    name = "UploadedDate"
-    type = "S"
-  }
-
+  
   tags = {
     Name        = "BirdStore"
     Environment = "Prod"
