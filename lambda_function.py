@@ -1,36 +1,65 @@
-import base64
-import boto3
-import mimetypes
 import json
+import boto3
+import uuid
+import os
 
 s3 = boto3.client('s3')
-BUCKET_NAME = 'assignment3-51-bucket' 
+BUCKET_NAME = 'assignment3-51-bucket'
 
 def lambda_handler(event, context):
+    if event['httpMethod'] == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST',
+            },
+            'body': ''
+        }
+
     try:
         data = json.loads(event['body'])
-
         file_name = data.get('file_name', 'file.unknown')
-        file_data = base64.b64decode(data['file_data'])
 
-        content_type, _ = mimetypes.guess_type(file_name)
-        if not content_type:
-            content_type = 'application/octet-stream'  # Fallback default
+        _, file_extension = os.path.splitext(file_name)
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
 
-        s3.put_object(
-            Bucket=BUCKET_NAME,
-            Key=f"original/{file_name}",
-            Body=file_data,
-            ContentType=content_type
+        folder = 'audio' if file_extension.lower() == '.wav' else 'images'
+        s3_key = f"{folder}/{unique_filename}"
+
+        # Generate pre-signed URL
+        url = s3.generate_presigned_url(
+            ClientMethod='put_object',
+            Params={
+                'Bucket': BUCKET_NAME,
+                'Key': s3_key,
+                'ContentType': data.get('content_type', 'application/octet-stream')
+            },
+            ExpiresIn=300  # URL valid for 5 minutes
         )
 
         return {
             'statusCode': 200,
-            'body': f"File {file_name} uploaded successfully to S3 bucket {BUCKET_NAME}"
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST',
+            },
+            'body': json.dumps({
+                'upload_url': url,
+                's3_key': s3_key,
+                'file_name': unique_filename
+            })
         }
 
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': str(e)
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST',
+            },
+            'body': json.dumps(f"Error generating URL: {str(e)}")
         }
