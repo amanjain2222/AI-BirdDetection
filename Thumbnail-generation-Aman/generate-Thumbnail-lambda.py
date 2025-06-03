@@ -10,6 +10,12 @@ def lambda_handler(event, context):
     # Get bucket and object key from the event
     bucket = event['Records'][0]['s3']['bucket']['name']
     key = event['Records'][0]['s3']['object']['key']
+    # security to skip recuresion - not required but just a security step
+    if key.startswith('thumbnails/'):
+        return {
+            'statusCode': 200,
+            'body': 'Skipped thumbnail generation for thumbnails/ folder.'
+        }
 
     # Download the image from S3
     response = s3.get_object(Bucket=bucket, Key=key)
