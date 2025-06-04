@@ -17,11 +17,11 @@ RUN mkdir -p /tmp/matplotlib /tmp/ultralytics && \
     chmod -R 755 /tmp/matplotlib /tmp/ultralytics
 
 # Copy function code
-COPY app.py ${LAMBDA_TASK_ROOT}
+COPY image-tagging.py ${LAMBDA_TASK_ROOT}
 
 # Set environment variables to force headless mode
 ENV DISPLAY=""
 ENV MPLBACKEND=Agg
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "app.lambda_handler" ]
+CMD [ "image-tagging.lambda_handler" ]
