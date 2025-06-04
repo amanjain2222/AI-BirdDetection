@@ -1,8 +1,8 @@
 import boto3
 import cv2 as cv
+import os
 import supervision as sv
 from ultralytics import YOLO
-import os
 
 
 def count_items(input_list: list):
@@ -18,7 +18,7 @@ def count_items(input_list: list):
 
 def update_items(prev_list: dict, curr_list: dict):
     """
-    Updates prev_list with items from curr_list, adding new keys or 
+    Updates prev_list with items from curr_list, adding new keys or
     updating existing keys only if the new value is greater.
     """
     for key, value in curr_list.items():
@@ -78,6 +78,10 @@ def lambda_handler(event, context):
 
     try:
         s3 = boto3.client("s3")
+        dynamodb = boto3.resource("dynamodb")
+
+        # Get DynamoDB table
+        table = dynamodb.Table("BirdStore")
 
         # Download model
         model_bucket = "birdtagbucket"
@@ -87,9 +91,13 @@ def lambda_handler(event, context):
         model_temp_path = f"/tmp/model_{context.aws_request_id}.pt"
         s3.download_file(model_bucket, model_key, model_temp_path)
 
-        # Download image
+        # Get image
         img_bucket = event["Records"][0]["s3"]["bucket"]["name"]
         img_key = event["Records"][0]["s3"]["object"]["key"]
+
+        # Extract UUID from filename (assuming filename is UUID.ext or just UUID)
+        file_uuid = os.path.splitext(os.path.basename(img_key))[0]
+        print(f"Processing file UUID: {file_uuid}")
 
         print(f"Downloading image: {img_bucket}/{img_key}")
         img_temp_path = f"/tmp/img_{context.aws_request_id}_{os.path.basename(img_key)}"
@@ -98,7 +106,27 @@ def lambda_handler(event, context):
         print("Making predictions...")
         tags = image_prediction(img_temp_path, model_temp_path)
 
-        return {"statusCode": 200, "body": f"Tagged {img_bucket}/{img_key} with {tags}"}
+        print(f"Updating DynamoDB for UUID: {file_uuid}")
+        # Convert tags before update
+        tag_counts = count_items(tags) if tags else {}
+        table.update_item(
+            Key={"uuid": file_uuid},
+            UpdateExpression="SET tags = :tags",
+            ExpressionAttributeValues={":tags": count_items(tag_counts)},
+            ReturnValues="UPDATED_NEW",
+        )
+        print("DynamoDB updated successfully")
+
+        return {
+            "statusCode": 200,
+            "body": {
+                "message": f"Successfully processed {img_key}",
+                "uuid": file_uuid,
+                "tag_counts": tag_counts,
+                "bucket": img_bucket,
+                "key": img_key,
+            },
+        }
 
     except Exception as e:
         print(f"Error in lambda_handler: {e}")
