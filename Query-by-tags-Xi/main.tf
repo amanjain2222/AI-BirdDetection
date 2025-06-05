@@ -9,7 +9,7 @@ resource "aws_s3_bucket" "BirdStoreBucket" {
 
 #
 resource "aws_dynamodb_table" "BirdBaseTable" {
-  name = "UploadedFiles" # the name of the table in DynamoDB
+  name = "BirdBase" # the name of the table in DynamoDB
   billing_mode = "PAY_PER_REQUEST" # on-demand billing mode
   hash_key = "BirdID"
 
@@ -25,10 +25,10 @@ resource "aws_dynamodb_table" "BirdBaseTable" {
 }
 
 resource "aws_dynamodb_table" "BirdBaseIndexTable" {
-  name = "FileIndex" # the name of the table in DynamoDB
+  name = "BirdBaseIndex" # the name of the table in DynamoDB
   billing_mode = "PAY_PER_REQUEST" # on-demand billing mode
   hash_key = "TagName"
-  range_key = "FileId"
+  range_key = "BirdID"
 
   attribute {
     name = "TagName" # hash key
