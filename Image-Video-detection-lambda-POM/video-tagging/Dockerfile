@@ -1,11 +1,11 @@
 FROM public.ecr.aws/lambda/python:3.11
 
-# Install system dependencies first
+# Install system dependencies
 RUN yum update -y && yum install -y mesa-libGL && yum clean all
 
 COPY requirements.txt  ${LAMBDA_TASK_ROOT} 
 
-# Install dependencies
+# Install function dependencies
 RUN pip install --no-cache-dir torch==2.0.1+cpu torchvision==0.15.2+cpu --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -22,6 +22,11 @@ COPY video-tagging.py ${LAMBDA_TASK_ROOT}
 # Set environment variables to force headless mode
 ENV DISPLAY=""
 ENV MPLBACKEND=Agg
+
+# Set default environment variables (can be overridden at runtime)
+ENV DYNAMODB_TABLE_NAME=BirdBaseIndex
+ENV MODEL_BUCKET_NAME=birdstore
+ENV MODEL_KEY=models/model.pt
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "video-tagging.lambda_handler" ]
