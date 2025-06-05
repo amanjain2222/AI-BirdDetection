@@ -3,7 +3,7 @@
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["birdtagbucket"]
+      "name": ["birdstore"]
     },
     "object": {
       "key": [{
