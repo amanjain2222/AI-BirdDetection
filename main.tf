@@ -14,10 +14,32 @@ resource "aws_dynamodb_table" "UploadedFilesTable" {
   hash_key = "FileId"
 
   attribute {
-    name = "FileId" # The UUID for the file? To be discussed
+    name = "FileId" # UUID 
     type = "S"
   }
   
+  tags = {
+    Name        = "BirdStore"
+    Environment = "Prod"
+  }
+}
+
+resource "aws_dynamodb_table" "FileIndexTable" {
+  name = "FileIndex" # the name of the table in DynamoDB
+  billing_mode = "PAY_PER_REQUEST" # on-demand billing mode
+  hash_key = "TagName"
+  range_key = "FileId"
+
+  attribute {
+    name = "TagName" # hash key
+    type = "S"
+  }
+
+  attribute {
+    name = "FileId" # range key 
+    type = "S"
+  }
+
   tags = {
     Name        = "BirdStore"
     Environment = "Prod"
