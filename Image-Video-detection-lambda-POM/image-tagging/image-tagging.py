@@ -77,16 +77,22 @@ def lambda_handler(event, context):
     img_temp_path = None
 
     try:
+        # Get environment variables
+        table_name = os.environ.get("DYNAMODB_TABLE_NAME", "BirdBaseIndex")
+        model_bucket = os.environ.get("MODEL_BUCKET_NAME", "birdstore")
+        model_key = os.environ.get("MODEL_KEY", "models/model.pt")
+
+        print(f"Using DynamoDB table: {table_name}")
+        print(f"Using model bucket: {model_bucket}")
+        print(f"Using model key: {model_key}")
+
         s3 = boto3.client("s3")
         dynamodb = boto3.resource("dynamodb")
 
         # Get DynamoDB table
-        table = dynamodb.Table("BirdStore")
+        table = dynamodb.Table(table_name)
 
         # Download model
-        model_bucket = "birdtagbucket"
-        model_key = "models/model.pt"
-
         print("Downloading model from S3...")
         model_temp_path = f"/tmp/model_{context.aws_request_id}.pt"
         s3.download_file(model_bucket, model_key, model_temp_path)
@@ -110,7 +116,7 @@ def lambda_handler(event, context):
         # Convert tags before update
         tag_counts = count_items(tags) if tags else {}
         table.update_item(
-            Key={"uuid": file_uuid},
+            Key={"BirdID": file_uuid},
             UpdateExpression="SET tags = :tags",
             ExpressionAttributeValues={":tags": count_items(tag_counts)},
             ReturnValues="UPDATED_NEW",
@@ -121,7 +127,7 @@ def lambda_handler(event, context):
             "statusCode": 200,
             "body": {
                 "message": f"Successfully processed {img_key}",
-                "uuid": file_uuid,
+                "BirdID": file_uuid,
                 "tag_counts": tag_counts,
                 "bucket": img_bucket,
                 "key": img_key,
