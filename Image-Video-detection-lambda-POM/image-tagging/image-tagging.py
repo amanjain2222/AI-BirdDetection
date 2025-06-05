@@ -97,9 +97,9 @@ def lambda_handler(event, context):
         model_temp_path = f"/tmp/model_{context.aws_request_id}.pt"
         s3.download_file(model_bucket, model_key, model_temp_path)
 
-        # Get image
-        img_bucket = event["Records"][0]["s3"]["bucket"]["name"]
-        img_key = event["Records"][0]["s3"]["object"]["key"]
+        # Get image details from EventBridge event
+        img_bucket = event["detail"]["bucket"]["name"]
+        img_key = event["detail"]["object"]["key"]
 
         # Extract UUID from filename (assuming filename is UUID.ext or just UUID)
         file_uuid = os.path.splitext(os.path.basename(img_key))[0]
@@ -118,7 +118,7 @@ def lambda_handler(event, context):
         table.update_item(
             Key={"BirdID": file_uuid},
             UpdateExpression="SET tags = :tags",
-            ExpressionAttributeValues={":tags": count_items(tag_counts)},
+            ExpressionAttributeValues={":tags": tag_counts},
             ReturnValues="UPDATED_NEW",
         )
         print("DynamoDB updated successfully")
