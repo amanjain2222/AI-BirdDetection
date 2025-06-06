@@ -4,6 +4,7 @@ import axios from 'axios';
 function FileUpload() {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleFileChange = (event) => {
     const file = event.target.files[0]
@@ -26,6 +27,8 @@ function FileUpload() {
       setMessage('Please select a file first.');
       return;
     }
+    
+    setIsLoading(true);
 
     try {
       // Step 1: Get pre-signed URL from your Lambda backend
@@ -40,6 +43,7 @@ function FileUpload() {
 
       const { upload_url, s3_key } = presignRes.data;
 
+
       // Step 2: Upload the file directly to S3
       await axios.put(upload_url, file, {
         headers: {
@@ -47,10 +51,12 @@ function FileUpload() {
         }
       });
 
-      setMessage(`File uploaded to S3 successfully!\nS3 Key: ${s3_key}`);
+      alert(`File uploaded to S3 successfully!\nS3 Key: ${s3_key}`);
     } catch (error) {
       console.error('Upload failed:', error);
-      setMessage('Upload failed: ' + (error.response?.data || error.message));
+      alert('Upload failed: ' + (error.response?.data || error.message));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -104,25 +110,36 @@ function FileUpload() {
       />
     </label>
     
-    <button 
+        <button 
       onClick={handleUpload}
+      disabled={isLoading}
       style={{
         padding: '0.75rem 1.5rem',
-        backgroundColor: '#4f46e5',
+        backgroundColor: isLoading ? '#666' : '#4f46e5',
         color: 'white',
         border: 'none',
         borderRadius: '6px',
         fontWeight: '500',
-        cursor: 'pointer',
+        cursor: isLoading ? 'not-allowed' : 'pointer',
         transition: 'background-color 0.2s',
-        marginTop: '0.5rem',
-        ':hover': {
-          backgroundColor: '#4338ca'
-        }
+        marginTop: '0.5rem'
       }}
     >
-      Upload File
+      {isLoading ? 'Uploading...' : 'Upload'}
     </button>
+
+    {isLoading && (
+      <div style={{ 
+        marginTop: '1rem', 
+        textAlign: 'center', 
+        color: '#cccccc', 
+        fontStyle: 'italic' 
+      }}>
+        Loading...
+      </div>
+    )}
+
+
     
     {message && (
       <p style={{
