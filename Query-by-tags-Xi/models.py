@@ -9,7 +9,7 @@ class BirdBaseModel(Model):
         write_capacity_units = 1
 
     # Primary key
-    BirdID = UnicodeAttribute(hash_key=True)
+    MediaID = UnicodeAttribute(hash_key=True)
     
     # File type: image, video or audio
     FileType = UnicodeAttribute()
@@ -21,7 +21,7 @@ class BirdBaseModel(Model):
     ThumbnailURL = UnicodeAttribute(null=True)
 
     # Uploaded date
-    UploadedDate = UnicodeAttribute()
+    # UploadedDate = UnicodeAttribute()
 
     # Uploader's username
     Uploader = UnicodeAttribute()
@@ -40,4 +40,4 @@ class BirdBaseIndexModel(Model):
     TagValue = NumberAttribute()
 
     # UUID of the media file
-    BirdID = UnicodeAttribute(range_key=True)
+    MediaID = UnicodeAttribute(range_key=True)

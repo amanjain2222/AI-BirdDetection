@@ -15,7 +15,7 @@ def generate_tags(media_records):
     results = []
     
     for record in media_records:
-        bird_id = record['BirdID']
+        media_id = record['MediaID']
         for species_name in species:
             species_count = 0
             for _ in range(random.randint(0, 20)):
@@ -25,7 +25,7 @@ def generate_tags(media_records):
                 results.append({
                     "TagName": species_name,
                     "TagValue": species_count,
-                    "BirdID": bird_id
+                    "MediaID": media_id
                 })
     return results
 
@@ -66,14 +66,14 @@ def generate_media_record():
     start_date = datetime(2024, 1, 1)
     end_date = datetime.now()
 
-    uploaded_date = random_date(start_date, end_date)
+    # uploaded_date = random_date(start_date, end_date)
 
     return {
-        "BirdID": file_id,
+        "MediaID": file_id,
         "FileType": file_type,
         "MediaURL": f"https://dummy-bucket.s3.amazonaws.com/images/{file_id}.{extension}",
         "ThumbnailURL": thumbnail_url,
-        "UploadedDate": uploaded_date,
+    #    "UploadedDate": uploaded_date,
         "Uploader": f"user_{random.randint(1, 100)}",
     }
 
@@ -95,11 +95,11 @@ def lambda_handler(event, context):
     # Save BirdBase rows to DynamoDB
     for item in bird_base_rows:
         BirdBaseModel(
-            BirdID=item["BirdID"],
+            MediaID=item["MediaID"],
             FileType=item["FileType"],
             MediaURL=item["MediaURL"],
             ThumbnailURL=item["ThumbnailURL"],
-            UploadedDate=item["UploadedDate"].isoformat(),  # Convert datetime to string
+        #    UploadedDate=item["UploadedDate"].isoformat(),  # Convert datetime to string
             Uploader=item["Uploader"]
         ).save()
 
@@ -108,7 +108,7 @@ def lambda_handler(event, context):
         BirdBaseIndexModel(
             TagName=tag["TagName"],
             TagValue=tag["TagValue"],
-            BirdID=tag["BirdID"]
+            MediaID=tag["MediaID"]
         ).save()
 
     return {
