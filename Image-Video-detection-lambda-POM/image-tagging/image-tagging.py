@@ -31,6 +31,32 @@ def update_items(prev_list: dict, curr_list: dict):
                 prev_list[key] = value
 
 
+def update_dynamodb_tags(table, bird_id: str, tag_counts: dict):
+    """
+    Creates separate items for each tag with TagName as hash key and BirdID as range key.
+    Overwrites existing items without checking.
+
+    Parameters:
+        table: DynamoDB table resource
+        bird_id (str): The bird ID to associate with tags
+        tag_counts (dict): Dictionary of tag names and their counts
+    """
+    try:
+        # Use batch writing for better performance
+        with table.batch_writer() as batch:
+            for tag_name, tag_value in tag_counts.items():
+                batch.put_item(
+                    Item={"TagName": tag_name, "TagValue": tag_value, "BirdID": bird_id}
+                )
+                print(
+                    f"Updated tag '{tag_name}' for BirdID '{bird_id}' with value {tag_value}"
+                )
+
+    except Exception as e:
+        print(f"Error in batch writing to DynamoDB: {e}")
+        raise
+
+
 def image_prediction(image_path: str, model_path: str, confidence: float = 0.5):
     """
     Function to make predictions of a pre-trained YOLO model on a given image.
@@ -113,15 +139,14 @@ def lambda_handler(event, context):
         tags = image_prediction(img_temp_path, model_temp_path)
 
         print(f"Updating DynamoDB for UUID: {file_uuid}")
-        # Convert tags before update
+        # Convert tags and update DynamoDB
         tag_counts = count_items(tags) if tags else {}
-        table.update_item(
-            Key={"BirdID": file_uuid},
-            UpdateExpression="SET tags = :tags",
-            ExpressionAttributeValues={":tags": tag_counts},
-            ReturnValues="UPDATED_NEW",
-        )
-        print("DynamoDB updated successfully")
+
+        if tag_counts:
+            update_dynamodb_tags(table, file_uuid, tag_counts)
+            print("DynamoDB updated successfully")
+        else:
+            print("No tags detected, skipping DynamoDB update")
 
         return {
             "statusCode": 200,
