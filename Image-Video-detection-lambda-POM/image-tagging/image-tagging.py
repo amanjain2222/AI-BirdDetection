@@ -107,10 +107,12 @@ def lambda_handler(event, context):
         table_name = os.environ.get("DYNAMODB_TABLE_NAME", "BirdBaseIndex")
         model_bucket = os.environ.get("MODEL_BUCKET_NAME", "birdstore")
         model_key = os.environ.get("MODEL_KEY", "models/model.pt")
+        confidence_threshold = float(os.environ.get("CONFIDENCE_THRESHOLD", "0.5"))
 
         print(f"Using DynamoDB table: {table_name}")
         print(f"Using model bucket: {model_bucket}")
         print(f"Using model key: {model_key}")
+        print(f"Using confidence threshold: {confidence_threshold}")
 
         s3 = boto3.client("s3")
         dynamodb = boto3.resource("dynamodb")
@@ -136,7 +138,7 @@ def lambda_handler(event, context):
         s3.download_file(img_bucket, img_key, img_temp_path)
 
         print("Making predictions...")
-        tags = image_prediction(img_temp_path, model_temp_path)
+        tags = image_prediction(img_temp_path, model_temp_path, confidence_threshold)
 
         print(f"Updating DynamoDB for UUID: {file_uuid}")
         # Convert tags and update DynamoDB
