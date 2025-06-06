@@ -31,14 +31,14 @@ def update_items(prev_list: dict, curr_list: dict):
                 prev_list[key] = value
 
 
-def update_dynamodb_tags(table, bird_id: str, tag_counts: dict):
+def update_dynamodb_tags(table, media_id: str, tag_counts: dict):
     """
-    Creates separate items for each tag with TagName as hash key and BirdID as range key.
+    Creates separate items for each tag with TagName as hash key and MediaID as range key.
     Overwrites existing items without checking.
 
     Parameters:
         table: DynamoDB table resource
-        bird_id (str): The bird ID to associate with tags
+        media_id (str): The media ID to associate with tags
         tag_counts (dict): Dictionary of tag names and their counts
     """
     try:
@@ -46,10 +46,10 @@ def update_dynamodb_tags(table, bird_id: str, tag_counts: dict):
         with table.batch_writer() as batch:
             for tag_name, tag_value in tag_counts.items():
                 batch.put_item(
-                    Item={"TagName": tag_name, "TagValue": tag_value, "BirdID": bird_id}
+                    Item={"TagName": tag_name, "TagValue": tag_value, "MediaID": media_id}
                 )
                 print(
-                    f"Updated tag '{tag_name}' for BirdID '{bird_id}' with value {tag_value}"
+                    f"Updated tag '{tag_name}' for MediaID '{media_id}' with value {tag_value}"
                 )
 
     except Exception as e:
@@ -167,7 +167,7 @@ def lambda_handler(event, context):
             "statusCode": 200,
             "body": {
                 "message": f"Successfully processed {vid_key}",
-                "BirdID": file_uuid,
+                "MediaID": file_uuid,
                 "tag_counts": tag_counts,
                 "bucket": vid_bucket,
                 "key": vid_key,
