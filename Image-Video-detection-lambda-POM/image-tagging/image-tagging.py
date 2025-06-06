@@ -139,7 +139,7 @@ def lambda_handler(event, context):
         tags = image_prediction(img_temp_path, model_temp_path)
 
         print(f"Updating DynamoDB for UUID: {file_uuid}")
-        # Convert tags and update DynamoDB according to new structure
+        # Convert tags and update DynamoDB
         tag_counts = count_items(tags) if tags else {}
 
         if tag_counts:

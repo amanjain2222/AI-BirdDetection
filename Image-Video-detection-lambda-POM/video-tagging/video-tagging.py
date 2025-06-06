@@ -153,7 +153,7 @@ def lambda_handler(event, context):
         tags = video_prediction(vid_temp_path, model_temp_path)
 
         print(f"Updating DynamoDB for UUID: {file_uuid}")
-        # Convert tags and update DynamoDB according to new structure
+        # Convert tags and update DynamoDB
         tag_counts = tags
         if tag_counts:
             update_dynamodb_tags(table, file_uuid, tag_counts)
