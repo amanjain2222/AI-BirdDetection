@@ -55,12 +55,88 @@ function FileUpload() {
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Upload a File</h2>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload} style={{ marginTop: '1rem' }}>Upload</button>
-      <p>{message}</p>
-    </div>
+    <div style={{ 
+  maxWidth: '500px',
+  margin: '2rem auto',
+  padding: '2rem',
+  backgroundColor: '#2a2a2a',
+  borderRadius: '12px',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+  color: '#f0f0f0'
+}}>
+  <h2 style={{
+    marginBottom: '1.5rem',
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: '1.5rem',
+    textAlign: 'center'
+  }}>Upload a File</h2>
+  
+  <div style={{
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem'
+  }}>
+    <label style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.5rem'
+    }}>
+      <span style={{
+        fontSize: '0.9rem',
+        color: '#cccccc'
+      }}>Select your file</span>
+      <input 
+        type="file" 
+        onChange={handleFileChange}
+        style={{
+          padding: '0.75rem',
+          border: '1px solid #444',
+          borderRadius: '6px',
+          backgroundColor: '#333333',
+          color: '#ffffff',
+          cursor: 'pointer',
+          transition: 'border-color 0.2s',
+          ':hover': {
+            borderColor: '#555'
+          }
+        }}
+      />
+    </label>
+    
+    <button 
+      onClick={handleUpload}
+      style={{
+        padding: '0.75rem 1.5rem',
+        backgroundColor: '#4f46e5',
+        color: 'white',
+        border: 'none',
+        borderRadius: '6px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s',
+        marginTop: '0.5rem',
+        ':hover': {
+          backgroundColor: '#4338ca'
+        }
+      }}
+    >
+      Upload File
+    </button>
+    
+    {message && (
+      <p style={{
+        marginTop: '1rem',
+        padding: '0.75rem',
+        borderRadius: '6px',
+        backgroundColor: message.includes('success') ? '#1a3a1a' : '#3a1a1a',
+        color: message.includes('success') ? '#a0f0a0' : '#f0a0a0'
+      }}>
+        {message}
+      </p>
+    )}
+  </div>
+</div>
   );
 }
 

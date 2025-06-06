@@ -5,9 +5,34 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* Dark grey background (similar to DeepSeek) */
+  background-color: #413b3b;  /* Pure dark grey */
+  color: #ffffff;             /* White text for readability */
+  min-height: 100vh;          /* Full viewport height */
 }
 
+/* Optional: Style code blocks for dark mode */
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+  background-color: #2d2d2d;   /* Slightly lighter grey */
+  color: #f8f8f8;             /* Soft white */
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* Optional: Improve scrollbar visibility in dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
 }
