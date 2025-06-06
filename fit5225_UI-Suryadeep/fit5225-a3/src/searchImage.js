@@ -14,6 +14,16 @@ function SearchImage() {
         const preped_query = 'https://ktchxqkala.execute-api.us-east-1.amazonaws.com/dev/search?' + query_params;
         console.log(preped_query);
 
+        const container = document.getElementById('thumbnailurlContainer');
+    
+        // Show loading spinner
+        container.innerHTML = `
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>generating S3 Thumbnail URLs...</p>
+            </div>
+        `;
+
         
         axios.get(preped_query)
             .then(response => {
