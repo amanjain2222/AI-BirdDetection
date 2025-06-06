@@ -49,7 +49,7 @@ The function expects a DynamoDB table with the following structure:
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
-| `BirdID` | String (Primary Key) | UUID extracted from the video filename |
+| `MediaID` | String (Primary Key) | UUID extracted from the video filename |
 | `tags` | Map | Dictionary of detected objects and their counts |
 
 ## Deployment
@@ -217,7 +217,7 @@ The function returns a response with the following structure:
   "statusCode": 200,
   "body": {
     "message": "Successfully processed video.mp4",
-    "BirdID": "uuid-from-filename",
+    "MediaID": "uuid-from-filename",
     "tag_counts": {
       "bird": 2,
       "tree": 1
