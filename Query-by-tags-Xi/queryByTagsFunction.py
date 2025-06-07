@@ -21,7 +21,8 @@ def lambda_handler(event, context):
             return {
                 "statusCode": 200,
                 "headers": {
-                    "Content-Type": "text/html"
+                    "Content-Type": "text/html",
+                    'Access-Control-Allow-Origin': '*',
                 },
                 "body": 
                     """
@@ -42,7 +43,7 @@ def lambda_handler(event, context):
             result_ids = set()
             for item in BirdBaseIndexModel.query(species):
                 if item.TagValue >= min_count:
-                    result_ids.add(item.BirdID)
+                    result_ids.add(item.MediaID)
             
             # Intersect with previous results to satisfy all tag conditions
             if matching_ids is None:
@@ -53,19 +54,22 @@ def lambda_handler(event, context):
         if not matching_ids:
             return {
                 "statusCode": 200,
+                "headers": {
+                    "Access-Control-Allow-Origin": "*",
+                },
                 "body": json.dumps({"results": []})
             }
 
         # Retrieve media records from BirdBaseModel
         results = []
-        for bird_id in matching_ids:
-            item = BirdBaseModel.get(bird_id)
+        for media_id in matching_ids:
+            item = BirdBaseModel.get(media_id)
             results.append({
-                "BirdID": item.BirdID,
+                "MedidaID": item.MediaID,
                 "FileType": item.FileType,
                 "MediaURL": item.MediaURL,
                 "ThumbnailURL": item.ThumbnailURL,
-                "UploadedDate": item.UploadedDate,
+                # "UploadedDate": item.UploadedDate,
                 "Uploader": item.Uploader
             })
 
@@ -76,14 +80,18 @@ def lambda_handler(event, context):
             'headers': {
                 'Access-Control-Allow-Origin': '*',   # or your domain
                 'Access-Control-Allow-Headers': 'Content-Type',
+                "Access-Control-Allow-Methods": "OPTIONS,GET",
             },
             "body": json.dumps({"results": results})
         }
         
     except Exception as e:
         return {
-            'statusCode': 500,
-            'body': str(e)
+            "statusCode": 500,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+            },
+            "body": str(e)
         }
 
     
