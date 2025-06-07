@@ -57,22 +57,27 @@ def update_dynamodb_tags(table, media_id: str, tag_counts: dict):
         raise
 
 
-def video_prediction(video_path: str, model_path: str, confidence: int = 0.5):
+def video_prediction(video_path: str, model_path: str, confidence: int = 0.5, frame_skip: int = 1):
     """
     Function to make predictions on video frames using a trained YOLO model.
-
+    
     Parameters:
         video_path (str): Path to the video file.
         model_path (str): path to the model.
         confidence (float): 0-1, only results over this value are saved.
+        frame_skip (int): Process every Nth frame (1 = all frames, 2 = every other frame, etc.)
     """
     try:
         # Load video info and extract width, height, and frames per second (fps)
         video_info = sv.VideoInfo.from_video_path(video_path=video_path)
         _, _, fps = int(video_info.width), int(video_info.height), int(video_info.fps)
+        
+        # Calculate effective fps after skipping frames
+        effective_fps = fps // frame_skip
+        print(f"Original FPS: {fps}, Processing every {frame_skip} frames, Effective FPS: {effective_fps}")
 
         model = YOLO(model_path)  # Load your custom-trained YOLO model
-        tracker = sv.ByteTrack(frame_rate=fps)  # Initialize the tracker with the video's frame rate
+        tracker = sv.ByteTrack(frame_rate=effective_fps)  # Use effective fps for tracker
         class_dict = model.names  # Get the class labels from the model
 
         # Capture the video from the given path
@@ -82,19 +87,28 @@ def video_prediction(video_path: str, model_path: str, confidence: int = 0.5):
 
         # Process the video frame by frame
         tags = {}
+        frame_count = 0
+        
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:  # End of the video
                 break
+            
+            # Skip frames based on frame_skip parameter
+            if frame_count % frame_skip != 0:
+                frame_count += 1
+                continue
+                
+            frame_count += 1
 
             # Make predictions on the current frame using the YOLO model
             result = model(frame)[0]
-            detections = sv.Detections.from_ultralytics(result)  # Convert model output to Detections format
-            detections = tracker.update_with_detections(detections=detections)  # Track detected objects
+            detections = sv.Detections.from_ultralytics(result)
+            detections = tracker.update_with_detections(detections=detections)
 
             # Filter detections based on confidence
             if detections.tracker_id is not None:
-                detections = detections[(detections.confidence > confidence)]  # Keep detections with confidence greater than a threashold
+                detections = detections[(detections.confidence > confidence)]
 
                 # Generate labels for tracked objects
                 labels_1 = [f"{class_dict[cls_id]}" for cls_id, _ in zip(detections.class_id, detections.confidence)]
@@ -105,11 +119,13 @@ def video_prediction(video_path: str, model_path: str, confidence: int = 0.5):
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        raise
 
     finally:
         # Release resources
-        cap.release()
-        print("Video processing complete, Released resources.")
+        if cap:
+            cap.release()
+            print("Released video capture resources.")
 
 
 def lambda_handler(event, context):
@@ -122,11 +138,13 @@ def lambda_handler(event, context):
         model_bucket = os.environ.get("MODEL_BUCKET_NAME", "birdstore")
         model_key = os.environ.get("MODEL_KEY", "models/model.pt")
         confidence_threshold = float(os.environ.get("CONFIDENCE_THRESHOLD", "0.5"))
+        frame_skip = int(os.environ.get("FRAME_SKIP", "1"))
 
         print(f"Using DynamoDB table: {table_name}")
         print(f"Using model bucket: {model_bucket}")
         print(f"Using model key: {model_key}")
         print(f"Using confidence threshold: {confidence_threshold}")
+        print(f"Using frame skip: {frame_skip}")
 
         s3 = boto3.client("s3")
         dynamodb = boto3.resource("dynamodb")
@@ -152,7 +170,7 @@ def lambda_handler(event, context):
         s3.download_file(vid_bucket, vid_key, vid_temp_path)
 
         print("Making predictions...")
-        tags = video_prediction(vid_temp_path, model_temp_path, confidence_threshold)
+        tags = video_prediction(vid_temp_path, model_temp_path, confidence_threshold, frame_skip)
 
         print(f"Updating DynamoDB for UUID: {file_uuid}")
         # Convert tags and update DynamoDB

@@ -63,21 +63,6 @@ def count_items(input_list: list):
     return counts
 
 
-def update_items(prev_list: dict, curr_list: dict):
-    """
-    Updates prev_list with items from curr_list, adding new keys or
-    updating existing keys only if the new value is greater.
-    """
-    for key, value in curr_list.items():
-        # add to dict if key not exist
-        if key not in prev_list:
-            prev_list[key] = value
-        # update to a higher value
-        else:
-            if value > prev_list[key]:
-                prev_list[key] = value
-
-
 def image_prediction(image_path: str, model_path: str, confidence: float = 0.5):
     """
     Function to make predictions of a pre-trained YOLO model on a given image.

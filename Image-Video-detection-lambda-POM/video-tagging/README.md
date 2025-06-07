@@ -42,6 +42,7 @@ S3 Bucket (Model) ←─────────┘
 | `MODEL_BUCKET_NAME` | S3 bucket containing the YOLO model | `birdstore` | No |
 | `MODEL_KEY` | S3 key path to the YOLO model file | `models/model.pt` | No |
 | `CONFIDENCE_THRESHOLD` | Confidence threshold for prediction | `0.5` | No |
+| `FRAME_SKIP` | Process every Nth frame for prediction | `1` | No |
 
 ## DynamoDB Table Schema
 
