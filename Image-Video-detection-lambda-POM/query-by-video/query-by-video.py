@@ -63,60 +63,107 @@ def count_items(input_list: list):
     return counts
 
 
-def image_prediction(image_path: str, model_path: str, confidence: float = 0.5):
+def update_items(prev_list: dict, curr_list: dict):
     """
-    Function to make predictions of a pre-trained YOLO model on a given image.
+    Updates prev_list with items from curr_list, adding new keys or
+    updating existing keys only if the new value is greater.
+    """
+    for key, value in curr_list.items():
+        # add to dict if key not exist
+        if key not in prev_list:
+            prev_list[key] = value
+        # update to a higher value
+        else:
+            if value > prev_list[key]:
+                prev_list[key] = value
 
+
+def video_prediction(video_path: str, model_path: str, confidence: int = 0.5, frame_skip: int = 1):
+    """
+    Function to make predictions on video frames using a trained YOLO model.
+    
     Parameters:
-        image_path (str): Path to the image file. Can be a local path or a URL.
+        video_path (str): Path to the video file.
         model_path (str): path to the model.
         confidence (float): 0-1, only results over this value are saved.
+        frame_skip (int): Process every Nth frame (1 = all frames, 2 = every other frame, etc.)
     """
-    # Load YOLO model
-    model = YOLO(model_path)
-    class_dict = model.names
+    try:
+        # Load video info and extract width, height, and frames per second (fps)
+        video_info = sv.VideoInfo.from_video_path(video_path=video_path)
+        _, _, fps = int(video_info.width), int(video_info.height), int(video_info.fps)
+        
+        # Calculate effective fps after skipping frames
+        effective_fps = fps // frame_skip
+        print(f"Original FPS: {fps}, Processing every {frame_skip} frames, Effective FPS: {effective_fps}")
 
-    # Load image from local path
-    img = cv.imread(image_path)
+        model = YOLO(model_path)  # Load your custom-trained YOLO model
+        tracker = sv.ByteTrack(frame_rate=effective_fps)  # Use effective fps for tracker
+        class_dict = model.names  # Get the class labels from the model
 
-    # Check if image was loaded successfully
-    if img is None:
-        print("Couldn't load the image! Please check the image path.")
-        return []
+        # Capture the video from the given path
+        cap = cv.VideoCapture(video_path)
+        if not cap.isOpened():
+            raise Exception("Error: couldn't open the video!")
 
-    # Run the model on the image
-    result = model(img)[0]
+        # Process the video frame by frame
+        tags = {}
+        frame_count = 0
+        
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:  # End of the video
+                break
+            
+            # Skip frames based on frame_skip parameter
+            if frame_count % frame_skip != 0:
+                frame_count += 1
+                continue
+                
+            frame_count += 1
 
-    # Convert YOLO result to Detections format
-    detections = sv.Detections.from_ultralytics(result)
+            # Make predictions on the current frame using the YOLO model
+            result = model(frame)[0]
+            detections = sv.Detections.from_ultralytics(result)
+            detections = tracker.update_with_detections(detections=detections)
 
-    tags = []
-    # Filter detections based on confidence threshold and check if any exist
-    if detections.class_id is not None:
-        detections = detections[(detections.confidence > confidence)]
+            # Filter detections based on confidence
+            if detections.tracker_id is not None:
+                detections = detections[(detections.confidence > confidence)]
 
-        # Create tags for the detected objects
-        tags = [
-            f"{class_dict[cls_id]}"
-            for cls_id, _ in zip(detections.class_id, detections.confidence)
-        ]
+                # Generate labels for tracked objects
+                labels_1 = [f"{class_dict[cls_id]}" for cls_id, _ in zip(detections.class_id, detections.confidence)]
 
-    return tags
+                update_items(tags, count_items(labels_1))
+
+        return tags
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise
+
+    finally:
+        # Release resources
+        if cap:
+            cap.release()
+            print("Released video capture resources.")
 
 
 def lambda_handler(event, context):
     model_temp_path = None
-    img_temp_path = None
+    vid_temp_path = None
 
     try:
         # Get environment variables
         model_bucket = os.environ.get("MODEL_BUCKET_NAME", "birdstore")
         model_key = os.environ.get("MODEL_KEY", "models/model.pt")
         confidence_threshold = float(os.environ.get("CONFIDENCE_THRESHOLD", "0.5"))
+        frame_skip = int(os.environ.get("FRAME_SKIP", "1"))
 
         print(f"Using model bucket: {model_bucket}")
         print(f"Using model key: {model_key}")
         print(f"Using confidence threshold: {confidence_threshold}")
+        print(f"Using frame skip: {frame_skip}")
 
         s3 = boto3.client("s3")
 
@@ -125,14 +172,14 @@ def lambda_handler(event, context):
         model_temp_path = f"/tmp/model_{context.aws_request_id}_{os.path.basename(model_key)}"
         s3.download_file(model_bucket, model_key, model_temp_path)
 
-        # Process base64 encoded image from request
+        # Process base64 encoded video from request
         if not event.get("body"):
             return {
                 "statusCode": 400,
                 "body": json.dumps({"error": "No request body found"}),
             }
 
-        # Parse JSON body to get base64 image data
+        # Parse JSON body to get base64 video data
         try:
             body = json.loads(event["body"])
         except json.JSONDecodeError:
@@ -141,35 +188,41 @@ def lambda_handler(event, context):
                 "body": json.dumps({"error": "Invalid JSON in request body"}),
             }
 
-        # Extract base64 image data
-        if "image" not in body:
+        # Extract base64 video data
+        if "video" not in body:
             return {
                 "statusCode": 400,
-                "body": json.dumps({"error": "No 'image' field found in request body"}),
+                "body": json.dumps({"error": "No 'video' field found in request body"}),
             }
 
-        print("Processing base64 encoded image data...")
+        print("Processing base64 encoded video data...")
         try:
-            image_data = base64.b64decode(body["image"])
+            video_data = base64.b64decode(body["video"])
         except Exception as e:
             return {
                 "statusCode": 400,
-                "body": json.dumps({"error": f"Invalid base64 image data: {str(e)}"}),
+                "body": json.dumps({"error": f"Invalid base64 video data: {str(e)}"}),
             }
 
-        # Save image data to temporary file
-        print("Saving image data to temporary file...")
+        # Save video data to temporary file
+        print("Saving video data to temporary file...")
 
-        img_temp_path = f"/tmp/img_{context.aws_request_id}"
+        vid_temp_path = f"/tmp/img_{context.aws_request_id}"
 
-        with open(img_temp_path, "wb") as f:
-            f.write(image_data)
+        with open(vid_temp_path, "wb") as f:
+            f.write(video_data)
 
         print("Making predictions...")
-        tags = image_prediction(img_temp_path, model_temp_path, confidence_threshold)
+        try:
+            tags = video_prediction(vid_temp_path, model_temp_path, confidence_threshold, frame_skip)
+        except Exception as e:
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"error": f"Video processing failed: {str(e)}"}),
+            }
 
         # Convert tags
-        filter_tags = count_items(tags) if tags else {}
+        filter_tags = tags if tags else {}
         
         print(f"Detected tags: {filter_tags}")
 
@@ -240,5 +293,5 @@ def lambda_handler(event, context):
         print(f"Error in lambda_handler: {e}")
         return {
             "statusCode": 500,
-            "body": json.dumps({"error": f"Error query by image: {str(e)}"}),
+            "body": json.dumps({"error": f"Error query by video: {str(e)}"}),
         }
