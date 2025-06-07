@@ -54,7 +54,7 @@ const styles = {
         color: 'white',
         textDecoration: 'none',
         fontWeight: 'bold',
-        backgroundColor: 'none',
+        backgroundColor: '#2a2a2a',
         border: 'none'
     }
 };
