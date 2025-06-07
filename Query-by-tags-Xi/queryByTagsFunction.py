@@ -1,6 +1,10 @@
 from models import BirdBaseModel, BirdBaseIndexModel
 import uuid
 import json
+import boto3
+import _helper as _
+
+s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
     try:
@@ -9,6 +13,7 @@ def lambda_handler(event, context):
 
         for species, count_str in params.items():
             try:
+                species = species.lower()
                 # If count is missing or empty, treat as 1
                 count = int(count_str) if count_str and count_str.strip() else 1
                 # print(f'species_count: {count}')
@@ -18,23 +23,10 @@ def lambda_handler(event, context):
                 continue
 
         if not filter_tags:
-            return {
-                "statusCode": 200,
-                "headers": {
-                    "Content-Type": "text/html"
-                },
-                "body": 
-                    """
-                    <html>
-                        <head><title>Search Page</title></head>
-                        <body>
-                            <h1>Dummy Search Page</h1>
-                            <p>To search, use a GET request with parameters like <code>?crow=2&owl=1</code></p>
-                        </body>
-                    </html>
-                    """
-            }
-
+            return _.build_response(200, {
+                "message": "To search, use a GET request with parameters like ?crow=2&owl=1"
+            })
+             
         matching_ids = None
 
         for species, min_count in filter_tags.items():
@@ -42,7 +34,7 @@ def lambda_handler(event, context):
             result_ids = set()
             for item in BirdBaseIndexModel.query(species):
                 if item.TagValue >= min_count:
-                    result_ids.add(item.BirdID)
+                    result_ids.add(item.MediaID)
             
             # Intersect with previous results to satisfy all tag conditions
             if matching_ids is None:
@@ -51,34 +43,30 @@ def lambda_handler(event, context):
                 matching_ids &= result_ids
 
         if not matching_ids:
-            return {
-                "statusCode": 200,
-                "body": json.dumps({"results": []})
-            }
-
+            return _.build_response(200, {
+                "message": "No results found",
+                "results": []
+            })
+            
         # Retrieve media records from BirdBaseModel
         results = []
-        for bird_id in matching_ids:
-            item = BirdBaseModel.get(bird_id)
+        for media_id in matching_ids:
+            item = BirdBaseModel.get(media_id)
             results.append({
-                "BirdID": item.BirdID,
+                "MediaID": item.MediaID,
                 "FileType": item.FileType,
-                "MediaURL": item.MediaURL,
-                "ThumbnailURL": item.ThumbnailURL,
-                "UploadedDate": item.UploadedDate,
+                "MediaURL": _.generate_presigned_url(item.MediaURL, s3),
+                "ThumbnailURL": _.generate_presigned_url(item.ThumbnailURL, s3),
+            #    "UploadedDate": item.UploadedDate,
                 "Uploader": item.Uploader
             })
 
         print(results)
 
-        return {
-            "statusCode": 200,
-            'headers': {
-                'Access-Control-Allow-Origin': '*',   # or your domain
-                'Access-Control-Allow-Headers': 'Content-Type',
-            },
-            "body": json.dumps({"results": results})
-        }
+        return _.build_response(200, {
+            "message": f"Succeeded! Got {len(results)} records",
+            "results": results
+        })
         
     except Exception as e:
         return {
