@@ -231,7 +231,7 @@ def lambda_handler(event, context):
             "statusCode": 200,
             "body": json.dumps({
                 "results": results,
-                "detected_species": list(filter_tags.keys()),
+                "detected_species": filter_tags,
                 "total_matches": len(results)
             }),
         }
