@@ -154,7 +154,7 @@ def lambda_handler(event, context):
 
         # Download model
         print("Downloading model from S3...")
-        model_temp_path = f"/tmp/model_{context.aws_request_id}.pt"
+        model_temp_path = f"/tmp/model_{context.aws_request_id}_{os.path.basename(model_key)}"
         s3.download_file(model_bucket, model_key, model_temp_path)
 
         # Get video
