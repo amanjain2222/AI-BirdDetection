@@ -125,7 +125,7 @@ def lambda_handler(event, context):
         model_temp_path = f"/tmp/model_{context.aws_request_id}.pt"
         s3.download_file(model_bucket, model_key, model_temp_path)
 
-        # Process base64 encoded image from PUT request
+        # Process base64 encoded image from request
         if not event.get("body"):
             return {
                 "statusCode": 400,
