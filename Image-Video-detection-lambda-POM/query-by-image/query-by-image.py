@@ -122,10 +122,10 @@ def lambda_handler(event, context):
 
         # Download model
         print("Downloading model from S3...")
-        model_temp_path = f"/tmp/model_{context.aws_request_id}.pt"
+        model_temp_path = f"/tmp/model_{context.aws_request_id}_{os.path.basename(model_key)}"
         s3.download_file(model_bucket, model_key, model_temp_path)
 
-        # Process base64 encoded image from PUT request
+        # Process base64 encoded image from request
         if not event.get("body"):
             return {
                 "statusCode": 400,
@@ -159,10 +159,8 @@ def lambda_handler(event, context):
 
         # Save image data to temporary file
         print("Saving image data to temporary file...")
-        # Default to jpg extension for base64 images
-        ext = ".jpg"
 
-        img_temp_path = f"/tmp/img_{context.aws_request_id}{ext}"
+        img_temp_path = f"/tmp/img_{context.aws_request_id}"
 
         with open(img_temp_path, "wb") as f:
             f.write(image_data)

@@ -16,21 +16,6 @@ def count_items(input_list: list):
     return counts
 
 
-def update_items(prev_list: dict, curr_list: dict):
-    """
-    Updates prev_list with items from curr_list, adding new keys or
-    updating existing keys only if the new value is greater.
-    """
-    for key, value in curr_list.items():
-        # add to dict if key not exist
-        if key not in prev_list:
-            prev_list[key] = value
-        # update to a higher value
-        else:
-            if value > prev_list[key]:
-                prev_list[key] = value
-
-
 def update_dynamodb_tags(table, media_id: str, tag_counts: dict):
     """
     Creates separate items for each tag with TagName as hash key and MediaID as range key.
@@ -122,7 +107,7 @@ def lambda_handler(event, context):
 
         # Download model
         print("Downloading model from S3...")
-        model_temp_path = f"/tmp/model_{context.aws_request_id}.pt"
+        model_temp_path = f"/tmp/model_{context.aws_request_id}_{os.path.basename(model_key)}"
         s3.download_file(model_bucket, model_key, model_temp_path)
 
         # Get image details from EventBridge event
