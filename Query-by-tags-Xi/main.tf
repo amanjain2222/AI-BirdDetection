@@ -11,10 +11,10 @@ resource "aws_s3_bucket" "BirdStoreBucket" {
 resource "aws_dynamodb_table" "BirdBaseTable" {
   name = "BirdBase" # the name of the table in DynamoDB
   billing_mode = "PAY_PER_REQUEST" # on-demand billing mode
-  hash_key = "BirdID"
+  hash_key = "MediaID"
 
   attribute {
-    name = "BirdID" # UUID 
+    name = "MediaID" # UUID 
     type = "S"
   }
   
@@ -28,7 +28,7 @@ resource "aws_dynamodb_table" "BirdBaseIndexTable" {
   name = "BirdBaseIndex" # the name of the table in DynamoDB
   billing_mode = "PAY_PER_REQUEST" # on-demand billing mode
   hash_key = "TagName"
-  range_key = "BirdID"
+  range_key = "MediaID"
 
   attribute {
     name = "TagName" # hash key
@@ -36,7 +36,7 @@ resource "aws_dynamodb_table" "BirdBaseIndexTable" {
   }
 
   attribute {
-    name = "BirdID" # range key 
+    name = "MediaID" # range key 
     type = "S"
   }
 
