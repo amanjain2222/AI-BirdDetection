@@ -44,7 +44,7 @@ export const signOut = () => {
   sessionStorage.removeItem("refreshToken");
 };
 
-export const signUp = async (email, password) => {
+export const signUp = async (email, password, firstName, lastName) => {
   const params = {
     ClientId: config.clientId,
     Username: email,
@@ -54,6 +54,8 @@ export const signUp = async (email, password) => {
         Name: "email",
         Value: email,
       },
+      { Name: "given_name", Value: firstName },
+      { Name: "family_name", Value: lastName },
     ],
   };
 

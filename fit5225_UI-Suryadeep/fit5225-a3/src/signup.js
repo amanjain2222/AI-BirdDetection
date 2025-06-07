@@ -1,16 +1,17 @@
-// Signup.js
 import React, { useState } from 'react';
 import { signUp } from './authService';
 import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleSignup = async () => {
     try {
-      await signUp(email, password);
+      await signUp(email, password, firstName, lastName);
       alert('Sign-up successful! Please check your email to confirm your account.');
       navigate('/confirm', { state: { email } });
     } catch (err) {
@@ -22,6 +23,18 @@ const Signup = () => {
   return (
     <div style={{ padding: '2rem' }}>
       <h2>Sign Up</h2>
+      <input
+        type="text"
+        placeholder="First Name"
+        value={firstName}
+        onChange={e => setFirstName(e.target.value)}
+      /><br />
+      <input
+        type="text"
+        placeholder="Last Name"
+        value={lastName}
+        onChange={e => setLastName(e.target.value)}
+      /><br />
       <input
         type="email"
         placeholder="Email"
