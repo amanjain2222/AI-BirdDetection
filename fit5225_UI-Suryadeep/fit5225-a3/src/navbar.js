@@ -1,18 +1,37 @@
 // components/Navbar.js
 import React from 'react';
-import { Link } from 'react-router-dom'; // if you're using React Router
+import { Link, useNavigate } from 'react-router-dom';
+import { signOut } from './authService';
 
 const Navbar = () => {
+
+    const navigate = useNavigate();
+    const isLoggedIn = !!sessionStorage.getItem('idToken');
+
+    const handleLogout = () => {
+        signOut();
+        navigate('/login');
+    };
+
+
     return (
         <nav style={styles.nav}>
             <h2 style={styles.logo}>Monash Birdy Buddies</h2>
             <div style={styles.links}>
-                <Link to="/" style={styles.link}>Upload Files</Link>
-                <Link to="/search" style={styles.link}>Search Files</Link>
-                <Link to="/about" style={styles.link}>About Us</Link>
+                {isLoggedIn && (
+                <>
+                    <Link to="/" style={styles.link}>Upload Files</Link>
+                    <Link to="/search" style={styles.link}>Search Files</Link>
+                    <Link to="/about" style={styles.link}>About Us</Link>
+                    <button onClick={handleLogout} style={styles.link}>Logout</button>
+                </>
+                )}
+                {!isLoggedIn && (
+                <Link to="/login" style={styles.link}>Login</Link>
+                )}
             </div>
         </nav>
-    );
+  );
 };
 
 const styles = {
@@ -35,6 +54,8 @@ const styles = {
         color: 'white',
         textDecoration: 'none',
         fontWeight: 'bold',
+        backgroundColor: '#2a2a2a',
+        border: 'none'
     }
 };
 

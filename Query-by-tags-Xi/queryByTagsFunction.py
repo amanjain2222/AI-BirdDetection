@@ -35,6 +35,7 @@ def lambda_handler(event, context):
             for item in BirdBaseIndexModel.query(species):
                 if item.TagValue >= min_count:
                     result_ids.add(item.MediaID)
+                    result_ids.add(item.MediaID)
             
             # Intersect with previous results to satisfy all tag conditions
             if matching_ids is None:
@@ -50,6 +51,8 @@ def lambda_handler(event, context):
             
         # Retrieve media records from BirdBaseModel
         results = []
+        for media_id in matching_ids:
+            item = BirdBaseModel.get(media_id)
         for media_id in matching_ids:
             item = BirdBaseModel.get(media_id)
             results.append({
@@ -70,8 +73,11 @@ def lambda_handler(event, context):
         
     except Exception as e:
         return {
-            'statusCode': 500,
-            'body': str(e)
+            "statusCode": 500,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+            },
+            "body": str(e)
         }
 
     

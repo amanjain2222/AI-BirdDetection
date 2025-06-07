@@ -42,6 +42,7 @@ S3 Bucket (Model) ←─────────┘
 | `MODEL_BUCKET_NAME` | S3 bucket containing the YOLO model | `birdstore` | No |
 | `MODEL_KEY` | S3 key path to the YOLO model file | `models/model.pt` | No |
 | `CONFIDENCE_THRESHOLD` | Confidence threshold for prediction | `0.5` | No |
+| `FRAME_SKIP` | Process every Nth frame for prediction | `1` | No |
 
 ## DynamoDB Table Schema
 
@@ -49,7 +50,7 @@ The function expects a DynamoDB table with the following structure:
 
 | Attribute | Type | Description |
 |-----------|------|-------------|
-| `BirdID` | String (Primary Key) | UUID extracted from the video filename |
+| `MediaID` | String (Primary Key) | UUID extracted from the video filename |
 | `tags` | Map | Dictionary of detected objects and their counts |
 
 ## Deployment
@@ -217,7 +218,7 @@ The function returns a response with the following structure:
   "statusCode": 200,
   "body": {
     "message": "Successfully processed video.mp4",
-    "BirdID": "uuid-from-filename",
+    "MediaID": "uuid-from-filename",
     "tag_counts": {
       "bird": 2,
       "tree": 1

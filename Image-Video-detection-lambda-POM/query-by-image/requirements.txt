@@ -1,0 +1,6 @@
+matplotlib
+numpy<2.0
+opencv-python-headless
+pynamodb
+supervision
+ultralytics
