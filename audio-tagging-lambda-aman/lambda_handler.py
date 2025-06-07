@@ -54,10 +54,6 @@ def lambda_handler(event, context):
     try:
         download_model_folder()
 
-        from birdnet_analyzer import config as cfg
-        cfg.CHECKPOINT_PATH = "/tmp/checkpoints/V2.4"
-
-
         record = event["Records"][0]
         bucket = record["s3"]["bucket"]["name"]
         key = record["s3"]["object"]["key"]
@@ -73,10 +69,24 @@ def lambda_handler(event, context):
         logger.info(f"⬇️ Downloading audio: s3://{bucket}/{key}")
         s3.download_file(bucket, key, local_audio_path)
 
-        logger.info("🔍 Running BirdNET analysis...")
+        # Convert to .wav if needed
+        input_ext = os.path.splitext(filename)[1].lower()
+        if input_ext != ".wav":
+            wav_filename = os.path.splitext(filename)[0] + ".wav"
+            wav_path = os.path.join(AUDIO_DIR, wav_filename)
 
+            logger.info(f"🎵 Converting {filename} to WAV format...")
+            os.system(f"ffmpeg -y -i '{local_audio_path}' -ar 48000 -ac 1 '{wav_path}'")
+
+            logger.info(f"✅ Conversion done: {wav_filename}")
+            analysis_input_path = wav_path
+        else:
+            analysis_input_path = local_audio_path
+
+        # Run BirdNET
+        logger.info("🔍 Running BirdNET analysis...")
         species_list = analyze(
-            input=local_audio_path,
+            input=analysis_input_path,
             output=OUTPUT_DIR,
         )
 
@@ -93,7 +103,7 @@ def lambda_handler(event, context):
                 table_index.put_item(Item={
                     "TagName": species,
                     "TagValue": 1,
-                    "BirdID": bird_id
+                    "MediaID": bird_id
                 })
 
             return {
