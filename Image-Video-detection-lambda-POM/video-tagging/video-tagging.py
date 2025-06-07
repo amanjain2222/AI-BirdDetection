@@ -119,11 +119,13 @@ def video_prediction(video_path: str, model_path: str, confidence: int = 0.5, fr
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        raise
 
     finally:
         # Release resources
-        cap.release()
-        print("Video processing complete, Released resources.")
+        if cap:
+            cap.release()
+            print("Released video capture resources.")
 
 
 def lambda_handler(event, context):
@@ -136,7 +138,7 @@ def lambda_handler(event, context):
         model_bucket = os.environ.get("MODEL_BUCKET_NAME", "birdstore")
         model_key = os.environ.get("MODEL_KEY", "models/model.pt")
         confidence_threshold = float(os.environ.get("CONFIDENCE_THRESHOLD", "0.5"))
-        frame_skip = float(os.environ.get("FRAME_SKIP", "1"))
+        frame_skip = int(os.environ.get("FRAME_SKIP", "1"))
 
         print(f"Using DynamoDB table: {table_name}")
         print(f"Using model bucket: {model_bucket}")
