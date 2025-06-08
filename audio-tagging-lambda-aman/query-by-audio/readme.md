@@ -35,5 +35,7 @@
 ## failed Response Format:
 
 ```json
-{}
+{
+  "message": "Endpoint request timed out"
+}
 ```
