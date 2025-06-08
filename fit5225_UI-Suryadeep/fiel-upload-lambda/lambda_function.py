@@ -4,7 +4,9 @@ import uuid
 import os
 
 s3 = boto3.client('s3')
-BUCKET_NAME = 'assignment3-51-bucket'
+dynamodb = boto3.resource('dynamodb')
+BUCKET_NAME = 'birdstore'
+TABLE_NAME = 'BirdBase' 
 
 def lambda_handler(event, context):
     if event['httpMethod'] == 'OPTIONS':
@@ -21,15 +23,41 @@ def lambda_handler(event, context):
     try:
         data = json.loads(event['body'])
         file_name = data.get('file_name', 'file.unknown')
+        user_id = data.get('userID', '')
 
         _, file_extension = os.path.splitext(file_name)
-        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        unique_id = str(uuid.uuid4())
+        unique_filename = f"{unique_id}{file_extension}"
 
-        folder = 'audio' if file_extension.lower() == '.wav' else 'images'
+        audio_extensions = ['.wav', '.mp3', '.m4a']
+        video_extensions = ['.mp4', '.mov', '.avi']
+        image_extensions = ['.jpg', '.png']
+
+        # Determine folder and file type
+        if file_extension.lower() in audio_extensions:
+            folder = 'audio'
+            file_type = 'audio'
+        elif file_extension.lower() in video_extensions:
+            folder = 'videos'
+            file_type = 'video'
+        elif file_extension.lower() in image_extensions:
+            folder = 'images'
+            file_type = 'image'
+        else: 
+            return{
+                'statusCode': 400,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST',
+                },
+                'body': json.dumps('Unsupported file type')
+            }
+
         s3_key = f"{folder}/{unique_filename}"
 
-        # Generate pre-signed URL
-        url = s3.generate_presigned_url(
+        # Generate pre-signed URL for upload
+        upload_url = s3.generate_presigned_url(
             ClientMethod='put_object',
             Params={
                 'Bucket': BUCKET_NAME,
@@ -39,6 +67,19 @@ def lambda_handler(event, context):
             ExpiresIn=300  # URL valid for 5 minutes
         )
 
+        # Construct permanent S3 media URL (you can adjust if you use CloudFront etc.)
+        media_url = f"https://{BUCKET_NAME}.s3.us-east-1.amazonaws.com/{s3_key}"
+
+        # Store in DynamoDB
+        table = dynamodb.Table(TABLE_NAME)
+        table.put_item(Item={
+            'MediaID': unique_id,  # UUID only, no extension
+            'FileType': file_type,
+            'MediaURL': media_url,
+            'ThumbnailURL': "",
+            'Uploader': user_id
+        })
+
         return {
             'statusCode': 200,
             'headers': {
@@ -47,7 +88,7 @@ def lambda_handler(event, context):
                 'Access-Control-Allow-Methods': 'OPTIONS,POST',
             },
             'body': json.dumps({
-                'upload_url': url,
+                'upload_url': upload_url,
                 's3_key': s3_key,
                 'file_name': unique_filename
             })
