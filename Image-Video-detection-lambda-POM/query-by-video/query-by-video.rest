@@ -1,4 +1,9 @@
-POST https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/search/byVideo
+@baseUrlDev = https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev
+@baseUrlProd = https://t6yu3oclhk.execute-api.us-east-1.amazonaws.com/prod
+
+###
+
+POST {{baseUrlProd}}/search/byVideo
 Content-Type: application/json
 
 {

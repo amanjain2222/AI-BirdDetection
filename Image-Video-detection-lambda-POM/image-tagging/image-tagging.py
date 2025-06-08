@@ -8,11 +8,12 @@ from ultralytics import YOLO
 def count_items(input_list: list):
     """
     Counts the occurrences of each item in a list and returns a dictionary
-    where keys are items and values are their counts.
+    where keys are items converted to lowercase and values are their counts.
     """
     counts = {}
     for item in input_list:
-        counts[item] = counts.get(item, 0) + 1
+        key = str(item).lower()
+        counts[key] = counts.get(key, 0) + 1
     return counts
 
 

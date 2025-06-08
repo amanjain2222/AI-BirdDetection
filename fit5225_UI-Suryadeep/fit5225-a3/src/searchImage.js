@@ -10,9 +10,8 @@ function SearchImage() {
     const getRequest = async (event) => {
         event.preventDefault(); 
 
-        const query_params = formData.filter(entry => entry.birdName != '').map(entry => entry.birdName + '=' + entry.birdCount).join('&');
-        const preped_query = 'https://ktchxqkala.execute-api.us-east-1.amazonaws.com/dev/search?' + query_params;
-        console.log(preped_query);
+        const query_params = formData.filter(entry => entry.birdName.trim() !== '').map(entry => `${encodeURIComponent(entry.birdName.trim())}=${encodeURIComponent(entry.birdCount !== '' ? entry.birdCount : 0)}`).join('&');
+        const preped_query = 'https://t6yu3oclhk.execute-api.us-east-1.amazonaws.com/prod/search?' + query_params;
 
         const container = document.getElementById('thumbnailurlContainer');
     
@@ -24,17 +23,27 @@ function SearchImage() {
             </div>
         `;
 
+        console.log(preped_query);
         
         axios.get(preped_query)
-            .then(response => {
-                console.log(response.data.results);
-                const thumbnail_url = response.data.results.map(result => result.ThumbnailURL);
-                const table = birdsTable(thumbnail_url);
+          .then(response => {
+            const results = response.data.results;
 
-                const container = document.getElementById('thumbnailurlContainer');
-                container.innerHTML = '';
-                container.appendChild(table);
-            });
+            // Extract URLs and file types
+            const urlList = results.map(result => {
+              if (result.FileType === "image") {
+                return result.ThumbnailURL;
+              } else if (result.FileType === "audio") {
+                return result.MediaURL;
+              }
+          })
+            const table = birdsTable(urlList);
+            console.log(table)
+
+            const container = document.getElementById('thumbnailurlContainer');
+            container.innerHTML = '';
+            container.appendChild(table);
+        });
     };
 
     const handleChange = (index, event) => {

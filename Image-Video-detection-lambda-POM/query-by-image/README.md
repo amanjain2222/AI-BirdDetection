@@ -19,17 +19,15 @@
 
 ```json
 {
+  "message": "Succeeded! Got 1 records",
   "results": [
     {
       "MediaId": "uuid",
       "FileType": "image",
       "MediaURL": "s3-url",
       "ThumbnailURL": "thumbnail-url",
-      "UploadedDate": "date",
       "Uploader": "username"
     }
-  ],
-  "detected_species": ["robin", "sparrow"],
-  "total_matches": 5
+  ]
 }
 ```
