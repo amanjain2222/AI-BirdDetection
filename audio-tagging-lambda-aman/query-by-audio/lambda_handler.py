@@ -97,30 +97,40 @@ def download_model_folder():
     logger.info("✅ Model downloaded to /tmp/checkpoints/V2.4")
 
 
+def build_response(status_code, body):
+    return {
+        "statusCode": status_code,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Credentials": "true"
+        },
+        "body": json.dumps(body)
+    }
+
+
 def lambda_handler(event, context):
     try:
         download_model_folder()
 
         # Parse input
         if not event.get("body"):
-            return {
-                "statusCode": 400,
-                "body": "No request body found"
-            }
+            return build_response(400,{
+                "message": "No request body found"
+            })
 
         try:
             body = json.loads(event["body"])
         except json.JSONDecodeError:
-            return {
-                "statusCode": 400,
-                "body": "Invalid JSON in request body"
-            }
+            return build_response(400, {
+                "message": "Invalid JSON in request body"
+            })
 
         if "audio" not in body or "filename" not in body:
-            return {
-                "statusCode": 400,
-                "body": "Missing 'audio' or 'filename' in request body"
-            }
+            return build_response(400, {
+                "message": "Missing 'audio' or 'filename' in request body"
+            })
 
         audio_data = base64.b64decode(body["audio"])
         filename = body["filename"]
@@ -164,7 +174,7 @@ def lambda_handler(event, context):
             for species in species_list:
                 logger.info(f"🔎 Querying BirdBaseIndex for species: {species}")
 
-                index_entries = BirdBaseIndexModel.query(species)
+                index_entries = BirdBaseIndexModel.query(species.lower())
 
                 for entry in index_entries:
                     logger.info(f"Found MediaID: {entry.MediaID}")
@@ -181,23 +191,17 @@ def lambda_handler(event, context):
                     except BirdBaseModel.DoesNotExist:
                         logger.warning(f"MediaID {entry.MediaID} not found in BirdBase")
 
-            return {
-                "statusCode": 200,
-                "body": json.dumps({
-                    "detected_species": species_list,
-                    "matching_media": matching_media
-                })
-            }
+            return  build_response(200,{
+                "detected_species": species_list,
+                "matching_media": matching_media
+            })
         else:
-            return {
-                "statusCode": 200,
-                "body": json.dumps({
-                    "detected_species": [],
-                    "matching_media": []
-                })
-            }
+            return build_response(200, {
+                "detected_species": species_list,
+                "matching_media": matching_media
+        })
 
     except Exception as e:
         logger.exception("❌ Lambda error")
-        return {"statusCode": 500, "body": str(e)}
+        return build_response(500, {"message": str(e)})
 
