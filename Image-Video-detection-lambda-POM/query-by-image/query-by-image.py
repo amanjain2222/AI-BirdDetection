@@ -5,61 +5,19 @@ import json
 import os
 import supervision as sv
 from ultralytics import YOLO
-from pynamodb.models import Model
-from pynamodb.attributes import UnicodeAttribute, NumberAttribute
-
-
-class BirdBaseModel(Model):
-    class Meta:
-        table_name = "BirdBase"
-        region = "us-east-1"
-        read_capacity_units = 1
-        write_capacity_units = 1
-
-    # Primary key
-    MediaID = UnicodeAttribute(hash_key=True)
-
-    # File type: image, video or audio
-    FileType = UnicodeAttribute()
-
-    # Link to the file in S3
-    MediaURL = UnicodeAttribute()
-
-    # Link to the image thumbnail
-    ThumbnailURL = UnicodeAttribute(null=True)
-
-    # Uploaded date
-    # UploadedDate = UnicodeAttribute()
-
-    # Uploader's username
-    Uploader = UnicodeAttribute()
-
-
-class BirdBaseIndexModel(Model):
-    class Meta:
-        table_name = "BirdBaseIndex"
-        region = "us-east-1"
-        read_capacity_units = 1
-        write_capacity_units = 1
-
-    # Primary key
-    TagName = UnicodeAttribute(hash_key=True)
-
-    # Number of a specific species
-    TagValue = NumberAttribute()
-
-    # UUID of the media file
-    MediaID = UnicodeAttribute(range_key=True)
+import helpers as _
+from models import BirdBaseModel, BirdBaseIndexModel
 
 
 def count_items(input_list: list):
     """
     Counts the occurrences of each item in a list and returns a dictionary
-    where keys are items and values are their counts.
+    where keys are items converted to lowercase and values are their counts.
     """
     counts = {}
     for item in input_list:
-        counts[item] = counts.get(item, 0) + 1
+        key = str(item).lower()
+        counts[key] = counts.get(key, 0) + 1
     return counts
 
 
@@ -127,35 +85,35 @@ def lambda_handler(event, context):
 
         # Process base64 encoded image from request
         if not event.get("body"):
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "No request body found"}),
-            }
+            return _.build_response(400, {
+                "message": "An error occurred while processing your request",
+                "error": "No request body found"
+            })
 
         # Parse JSON body to get base64 image data
         try:
             body = json.loads(event["body"])
         except json.JSONDecodeError:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "Invalid JSON in request body"}),
-            }
+            return _.build_response(400, {
+                "message": "An error occurred while processing your request",
+                "error": "Invalid JSON in request body"
+            })
 
         # Extract base64 image data
         if "image" not in body:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "No 'image' field found in request body"}),
-            }
+            return _.build_response(400, {
+                "message": "An error occurred while processing your request",
+                "error": "No 'image' field found in request body"
+            })
 
         print("Processing base64 encoded image data...")
         try:
             image_data = base64.b64decode(body["image"])
         except Exception as e:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": f"Invalid base64 image data: {str(e)}"}),
-            }
+            return _.build_response(400, {
+                "message": "An error occurred while processing your request",
+                "error": f"Invalid base64 image data: {str(e)}"
+            })
 
         # Save image data to temporary file
         print("Saving image data to temporary file...")
@@ -175,70 +133,51 @@ def lambda_handler(event, context):
 
         # Query database for each detected species
         matching_ids = None
+
         for species, min_count in filter_tags.items():
-            try:
-                # Query BirdBaseIndexModel for each tag
-                result_ids = set()
-                for item in BirdBaseIndexModel.query(species):
-                    if item.TagValue >= min_count:
-                        result_ids.add(item.MediaID)
+            # Query BirdBaseIndexModel for each tag
+            result_ids = set()
+            for item in BirdBaseIndexModel.query(species):
+                if item.TagValue >= min_count:
+                    result_ids.add(item.MediaID)
+                    result_ids.add(item.MediaID)
+            
+            # Intersect with previous results to satisfy all tag conditions
+            if matching_ids is None:
+                matching_ids = result_ids
+            else:
+                matching_ids &= result_ids
 
-                print(f"Found {len(result_ids)} matches for {species} with count >= {min_count}")
-
-                # Intersect with previous results to satisfy all tag conditions
-                if matching_ids is None:
-                    matching_ids = result_ids
-                else:
-                    matching_ids &= result_ids
-                    
-            except Exception as e:
-                print(f"Error querying for species {species}: {e}")
-                continue
-
-        # If no matching IDs found, return empty results
         if not matching_ids:
-            print("No matching media found")
-            return {
-                "statusCode": 200,
-                "body": json.dumps({
-                    "results": [],
-                    "detected_species": list(filter_tags.keys()),
-                    "message": "No matching media found in database"
-                })
-            }
-
-        print(f"Found {len(matching_ids)} total matching medias")
+            return _.build_response(200, {
+                "message": "No results found",
+                "results": []
+            })
 
         # Retrieve media records from BirdBaseModel
         results = []
         for media_id in matching_ids:
-            try:
-                print(f"Getting media_id: {media_id}")
-                item = BirdBaseModel.get(media_id)
-                results.append({
-                    "MediaID": item.MediaID,
-                    "FileType": item.FileType,
-                    "MediaURL": item.MediaURL,
-                    "ThumbnailURL": item.ThumbnailURL,
-                    # "UploadedDate": item.UploadedDate,
-                    "Uploader": item.Uploader,
-                })
-            except Exception as e:
-                print(f"Error retrieving media {media_id}: {e}")
-                continue
+            item = BirdBaseModel.get(media_id)
+        for media_id in matching_ids:
+            item = BirdBaseModel.get(media_id)
+            results.append({
+                "MediaID": item.MediaID,
+                "FileType": item.FileType,
+                "MediaURL": _.generate_presigned_url(item.MediaURL, s3),
+                "ThumbnailURL": _.generate_presigned_url(item.ThumbnailURL, s3),
+            #    "UploadedDate": item.UploadedDate,
+                "Uploader": item.Uploader
+            })
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps({
-                "results": results,
-                "detected_species": filter_tags,
-                "total_matches": len(results)
-            }),
-        }
+        print(f"Retrived results: {results}")
+
+        return _.build_response(200, {
+            "message": f"Succeeded! Got {len(results)} records",
+            "results": results
+        })
 
     except Exception as e:
-        print(f"Error in lambda_handler: {e}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": f"Error query by image: {str(e)}"}),
-        }
+        return _.build_response(500, {
+            "message": "An error occurred while processing your request",
+            "error": str(e)
+        })

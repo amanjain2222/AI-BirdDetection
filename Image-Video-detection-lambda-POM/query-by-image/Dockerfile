@@ -18,6 +18,8 @@ RUN mkdir -p /tmp/matplotlib /tmp/ultralytics && \
 
 # Copy function code
 COPY query-by-image.py ${LAMBDA_TASK_ROOT}
+COPY models.py ${LAMBDA_TASK_ROOT}
+COPY helpers.py ${LAMBDA_TASK_ROOT}
 
 # Set environment variables to force headless mode
 ENV DISPLAY=""
