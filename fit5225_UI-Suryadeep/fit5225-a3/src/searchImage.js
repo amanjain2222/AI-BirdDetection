@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import birdsTable from './birdsTable'
+import FindFilesFromUpload from './findFIlesFromUpload';
 
 function SearchImage() {
     const [formData, setFormData] = useState([
@@ -28,17 +29,18 @@ function SearchImage() {
         axios.get(preped_query)
           .then(response => {
             const results = response.data.results;
+            console.log(response.data.results);
 
             // Extract URLs and file types
             const urlList = results.map(result => {
               if (result.FileType === "image") {
                 return result.ThumbnailURL;
-              } else if (result.FileType === "audio") {
+              } else {
                 return result.MediaURL;
               }
           })
             const table = birdsTable(urlList);
-            console.log(table)
+
 
             const container = document.getElementById('thumbnailurlContainer');
             container.innerHTML = '';
@@ -60,7 +62,7 @@ function SearchImage() {
     return (
         <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
   <h2 style={{ marginBottom: '1.5rem' }}>
-    View Files Based on the Tags you Provide
+    View Files Based on Bird Species
   </h2>
   <form onSubmit={getRequest}>
     {formData.map((entry, index) => (
@@ -130,7 +132,13 @@ function SearchImage() {
     </button>
   </form>
         <div id="thumbnailurlContainer" style={{ marginTop: '2rem' }}></div>
-    </div>
+        <div>
+          <FindFilesFromUpload/>
+        </div>
+        <div id="SimilarFilesContainer" style={{ marginTop: '2rem' }}>
+        </div>
+    
+  </div>
     );
 }
 

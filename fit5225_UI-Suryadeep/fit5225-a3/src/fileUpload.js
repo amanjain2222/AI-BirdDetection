@@ -10,12 +10,12 @@ function FileUpload() {
     const file = event.target.files[0]
     if (!file) return;
     
-    const allowedTypes = ['mp3', 'mp4', 'wav', 'jpg']
+    const allowedTypes = ['mp3', 'mp4', 'wav', 'jpg', 'png']
     const fileExtension = file.name.split('.').pop().toLowerCase();
     console.log(fileExtension);
 
     if (!allowedTypes.includes(fileExtension)) {
-      alert('Only .mp3, .mp4, .wav, and .jpg files are allowed.');
+      alert('Only .mp3, .mp4, .wav, .jpg and .png files are allowed.');
       event.target.value = ''; // reset input
       return;
   }

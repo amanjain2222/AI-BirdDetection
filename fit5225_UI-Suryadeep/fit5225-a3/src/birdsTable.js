@@ -1,3 +1,5 @@
+
+
 function birdsTable(rowData) {
     const table = document.createElement('table');
     table.style.width = '100%';
@@ -12,7 +14,16 @@ function birdsTable(rowData) {
         const dataCell = document.createElement('td');
 
         indexCell.textContent = index + 1;
-        dataCell.textContent = element || '—';
+
+        // ✅ Create a new <a> tag for each row
+        const link = document.createElement('a');
+        link.href = element;
+        link.textContent = element;
+        link.target = '_blank'; // Open in new tab
+        link.style.color = '#4ea8de';
+        link.style.textDecoration = 'underline';
+
+        dataCell.appendChild(link);
 
         [indexCell, dataCell].forEach(cell => {
             cell.style.border = '1px solid #666';
