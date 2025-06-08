@@ -63,9 +63,16 @@ function BulkTagging() {
             <input
               type="text"
               placeholder="https://example.com/image.png"
-              style={{ flex: 1 }}
               value={url.value}
               onChange={(e) => handleInputChange(index, e.target.value, 'url')}
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '8px',
+                border: '1px solid #ccc',
+                width: '200px',
+                fontSize: '1rem',
+            }}
             />
             <button type="button" onClick={() => removeField(index, 'url')}>❌</button>
           </div>
@@ -90,7 +97,14 @@ function BulkTagging() {
             <input
               type="text"
               placeholder="e.g., crow,1"
-              style={{ flex: 1 }}
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '8px',
+                border: '1px solid #ccc',
+                width: '200px',
+                fontSize: '1rem',
+            }}
               value={tag.value}
               onChange={(e) => handleInputChange(index, e.target.value, 'tag')}
             />
