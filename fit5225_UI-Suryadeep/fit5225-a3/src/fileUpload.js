@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import getUser from './getUser';
 
 function FileUpload() {
   const [file, setFile] = useState(null);
@@ -31,10 +32,12 @@ function FileUpload() {
     setIsLoading(true);
 
     try {
+      const user_id = getUser(); // Get the user ID from your auth service
       // Step 1: Get pre-signed URL from your Lambda backend
-      const presignRes = await axios.post('https://qiorooauyl.execute-api.us-east-1.amazonaws.com/dev/upload', {
+      const presignRes = await axios.post('https://hgznhem1gg.execute-api.us-east-1.amazonaws.com/prod/upload', {
         file_name: file.name,
-        content_type: file.type
+        content_type: file.type,
+        userID: user_id
       }, {
         headers: {
           'Content-Type': 'application/json',

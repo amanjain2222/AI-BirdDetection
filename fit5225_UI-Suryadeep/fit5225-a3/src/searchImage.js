@@ -3,6 +3,7 @@ import axios from 'axios';
 import birdsTable from './birdsTable'
 import FindFilesFromUpload from './findFIlesFromUpload';
 
+
 function SearchImage() {
     const [formData, setFormData] = useState([
         { birdName: '', birdCount: 0 }
@@ -31,6 +32,7 @@ function SearchImage() {
             const results = response.data.results;
             console.log(response.data.results);
 
+            if (Array.isArray(results) && results.length > 0) {
             // Extract URLs and file types
             const urlList = results.map(result => {
               if (result.FileType === "image") {
@@ -38,13 +40,17 @@ function SearchImage() {
               } else {
                 return result.MediaURL;
               }
-          })
+            });
+            // TODO: 
             const table = birdsTable(urlList);
-
 
             const container = document.getElementById('thumbnailurlContainer');
             container.innerHTML = '';
             container.appendChild(table);
+          } else {
+            const container = document.getElementById('thumbnailurlContainer');
+            container.innerHTML = '<p>No results found.</p>';
+          }
         });
     };
 
