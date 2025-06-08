@@ -72,12 +72,9 @@ def lambda_handler(event, context):
         })
         
     except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": {
-                "Access-Control-Allow-Origin": "*",
-            },
-            "body": str(e)
-        }
+        return _.build_response(500, {
+            "message": "An error occurred while processing your request",
+            "error": str(e)
+        })
 
     

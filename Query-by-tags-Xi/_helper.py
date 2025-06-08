@@ -4,12 +4,20 @@ from urllib.parse import urlparse
 
 s3_client = boto3.client('s3')
 
-# Helper function: generate a pre-signed URL
-def generate_presigned_url(s3_url, s3_client = boto3.client('s3'), expiration=3600):
-    try: 
+def parse_s3_url(s3_url):    
+    try:
         parsed = urlparse(s3_url)
         bucket = parsed.netloc.split('.')[0]
         key = parsed.path.lstrip('/')
+        return bucket, key
+    except Exception as e:
+        print(f"Error parsing S3 URL: {e}")
+        return None
+
+# Helper function: generate a pre-signed URL
+def generate_presigned_url(s3_url, s3_client = boto3.client('s3'), expiration=3600):
+    try: 
+        bucket, key = parse_s3_url(s3_url)
         return s3_client.generate_presigned_url(
             'get_object',
             Params={'Bucket': bucket, 'Key': key},
