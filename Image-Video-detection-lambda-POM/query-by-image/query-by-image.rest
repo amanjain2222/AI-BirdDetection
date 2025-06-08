@@ -1,4 +1,9 @@
-PUT https://9s24f09rl6.execute-api.us-east-1.amazonaws.com/dev/search/byImage
+@baseUrlDev = https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev
+@baseUrlProd = https://t6yu3oclhk.execute-api.us-east-1.amazonaws.com/prod
+
+###
+
+POST {{baseUrlProd}}/search/byImage
 Content-Type: application/json
 
 {
