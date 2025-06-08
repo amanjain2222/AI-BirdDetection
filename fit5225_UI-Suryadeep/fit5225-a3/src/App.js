@@ -8,6 +8,8 @@ import Login from './login';
 import PrivateRoute from './privateRoute';
 import Signup from './signup';
 import ConfirmSignup from './confirmSignUp';
+import BulkTagging from './bulktagging';
+
 
 function App() {
   return (
@@ -31,6 +33,14 @@ function App() {
             element={
               <PrivateRoute>
                 <SearchImage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/tagging"
+            element={
+              <PrivateRoute>
+                <BulkTagging />
               </PrivateRoute>
             }
           />

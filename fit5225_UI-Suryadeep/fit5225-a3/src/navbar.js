@@ -22,6 +22,7 @@ const Navbar = () => {
                 <>
                     <Link to="/" style={styles.link}>Upload Files</Link>
                     <Link to="/search" style={styles.link}>Search Files</Link>
+                    <Link to="/tagging" style={styles.link}>Tagging</Link>
                     <Link to="/about" style={styles.link}>About Us</Link>
                     <button onClick={handleLogout} style={styles.link}>Logout</button>
                 </>
