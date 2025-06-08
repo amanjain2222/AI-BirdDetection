@@ -7,7 +7,7 @@ from birdnet_analyzer.analyze.core import analyze
 import numba
 from pynamodb.models import Model
 from pynamodb.attributes import UnicodeAttribute, NumberAttribute
-
+from . import helper as _
 
 os.environ["NUMBA_CACHE_DIR"] = "/tmp/numba_cache"
 numba.config.CACHE = False
@@ -97,18 +97,6 @@ def download_model_folder():
     logger.info("✅ Model downloaded to /tmp/checkpoints/V2.4")
 
 
-def build_response(status_code, body):
-    return {
-        "statusCode": status_code,
-        "headers": {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Credentials": "true"
-        },
-        "body": json.dumps(body)
-    }
-
 
 def lambda_handler(event, context):
     try:
@@ -116,19 +104,19 @@ def lambda_handler(event, context):
 
         # Parse input
         if not event.get("body"):
-            return build_response(400,{
+            return _.build_response(400,{
                 "message": "No request body found"
             })
 
         try:
             body = json.loads(event["body"])
         except json.JSONDecodeError:
-            return build_response(400, {
+            return _.build_response(400, {
                 "message": "Invalid JSON in request body"
             })
 
         if "audio" not in body or "filename" not in body:
-            return build_response(400, {
+            return _.build_response(400, {
                 "message": "Missing 'audio' or 'filename' in request body"
             })
 
@@ -184,24 +172,24 @@ def lambda_handler(event, context):
                         matching_media.append({
                             "MediaID": media_item.MediaID,
                             "FileType": media_item.FileType,
-                            "MediaURL": media_item.MediaURL,
+                            "MediaURL":  _.generate_presigned_url(media_item.MediaURL, s3),
                             "ThumbnailURL": media_item.ThumbnailURL,
                             "Uploader": media_item.Uploader
                         })
                     except BirdBaseModel.DoesNotExist:
                         logger.warning(f"MediaID {entry.MediaID} not found in BirdBase")
 
-            return  build_response(200,{
+            return  _.build_response(200,{
                 "detected_species": species_list,
                 "matching_media": matching_media
             })
         else:
-            return build_response(200, {
+            return _.build_response(200, {
                 "detected_species": species_list,
                 "matching_media": matching_media
         })
 
     except Exception as e:
         logger.exception("❌ Lambda error")
-        return build_response(500, {"message": str(e)})
+        return _.build_response(500, {"message": str(e)})
 
