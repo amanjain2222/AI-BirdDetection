@@ -1,0 +1,15 @@
+@baseUrl = https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev
+
+###
+
+GET {{baseUrl}}/sns
+
+###
+
+POST {{baseUrl}}/sns
+Content-Type: application/json
+
+{
+    "email": "pmek0001@student.monash.edu",
+    "topicArn": "arn:aws:sns:us-east-1:831076986893:test"
+}
