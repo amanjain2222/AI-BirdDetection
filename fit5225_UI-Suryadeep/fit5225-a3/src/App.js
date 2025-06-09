@@ -9,6 +9,7 @@ import PrivateRoute from './privateRoute';
 import Signup from './signup';
 import ConfirmSignup from './confirmSignUp';
 import BulkTagging from './bulktagging';
+import SNSTopicSelector from './sns';
 
 
 function App() {
@@ -41,6 +42,14 @@ function App() {
             element={
               <PrivateRoute>
                 <BulkTagging />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/sns-topics"
+            element={
+              <PrivateRoute>
+                <SNSTopicSelector />
               </PrivateRoute>
             }
           />
