@@ -6,12 +6,18 @@ function SNSTopicSelector() {
     const [selectedTopic, setSelectedTopic] = useState('');
     const [message, setMessage] = useState('');
     const [userEmail, setUserEmail] = useState('');
+    const authorizationToken = sessionStorage.getItem('idToken'); // Get the token from session storage
 
     // Fetch available SNS topics
     useEffect(() => {
         const fetchTopics = async () => {
             try {
-                const response = await axios.get('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/sns');
+                const response = await axios.get('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/sns', 
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': authorizationToken // Include the authorization token
+                }});
                 console.log('Fetched topics:', response);
                 setTopics(response.data);
             } catch (err) {
@@ -41,7 +47,8 @@ function SNSTopicSelector() {
                     email: userEmail
                 }, {
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': authorizationToken // Include the authorization token
                 }
             });
 
