@@ -12,11 +12,15 @@ def clean_url(url):
         print(f"Error cleaning URL: {e}")
         return ""
 
+def add_region_to_s3_url(s3_url, region='us-east-1'):
+    return s3_url.replace("s3.amazonaws.com", f"s3.{region}.amazonaws.com")
+
 def extract_s3_url(presigned_url):
     try:
         print(f"Extracting S3 URL from presigned URL: {presigned_url}")
         parsed = urlparse(presigned_url)
-        s3_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+        print(f"Parsed URL: {parsed}")
+        s3_url = f"{parsed.scheme}://{add_region_to_s3_url(parsed.netloc)}{parsed.path}"
         return s3_url
     except Exception as e:
         print(f"Error extracting S3 URL: {e}")
@@ -64,7 +68,7 @@ if __name__ == "__main__":
     s3_url = extract_s3_url(presigned_url)
     print(f"Extracted S3 URL: {s3_url}")
 
-    s3_url = ""
+    #s3_url = ""
     presigned_url = generate_presigned_url(s3_url, s3_client)
     print(f"Presigned URL: {presigned_url}")
 
