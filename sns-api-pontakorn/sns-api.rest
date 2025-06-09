@@ -1,12 +1,13 @@
-@baseUrl = https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev
+@baseUrlDev = https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev
+@baseUrlProd = https://t6yu3oclhk.execute-api.us-east-1.amazonaws.com/prod
 
 ### Get SNS Topics List
 
-GET {{baseUrl}}/sns
+GET {{baseUrlProd}}/sns
 
 ### Subscribe to an SNS Topic
 
-POST {{baseUrl}}/sns
+POST {{baseUrlProd}}/sns
 Content-Type: application/json
 
 {
