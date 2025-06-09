@@ -1,0 +1,38 @@
+@baseUrlDev = https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev
+
+### Query by tag
+GET {{baseUrlDev}}/search?kingfisher=1
+
+### Query by thumbnail
+POST {{baseUrlDev}}/search/thumbnail
+Content-Type: application/json
+
+{
+    "thumbnail": "https://birdtagbucket.s3.us-east-1.amazonaws.com/thumbnails/d610926e-b6a2-4c7f-a122-c0c43b83fcfa.jpg"
+}
+
+### Query media id
+GET {{baseUrlDev}}/tag?media_id=a48fd17a-667c-4863-9162-ccebc6e3f870
+
+### Modify tag
+POST {{baseUrlDev}}/tag
+Content-Type: application/json
+
+{
+    "urls": [
+        "https://birdtagbucket.s3.us-east-1.amazonaws.com/thumbnails/d610926e-b6a2-4c7f-a122-c0c43b83fcfa.jpg",
+        "https://dummy-bucket.s3.amazonaws.com/thumbnails/b2e32061-5a5c-4bc0-bdfd-b948915494b8.jpg"
+    ],
+    "operation": 1,
+    "tags": ["crow,15", "pigeon,2"]
+}
+
+### Delete media
+DELETE {{baseUrlDev}}/media
+Content-Type: application/json
+
+{
+    "urls": [
+        "https://birdtagbucket.s3.us-east-1.amazonaws.com/videos/a33a51ad-9c1f-4a65-ad4f-968818ca25ec.mp4"
+    ]
+}

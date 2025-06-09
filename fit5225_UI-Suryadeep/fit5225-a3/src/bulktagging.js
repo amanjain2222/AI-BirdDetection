@@ -44,7 +44,7 @@ function BulkTagging() {
     console.log('Payload:', payload);
 
     try {
-      const response = await axios.post('https://ktchxqkala.execute-api.us-east-1.amazonaws.com/dev/modifyTags', payload);
+      const response = await axios.post('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/tag', payload);
       setMessage(`Success: ${response.data.message || 'Tags updated'}`);
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.message || error.message}`);
@@ -90,7 +90,6 @@ function BulkTagging() {
           + Add URL
         </button>
 
-        {/* Tag Fields */}
         <label style={{ marginTop: '1.5rem', display: 'block' }}>Tags (e.g., crow,1):</label>
         {tags.map((tag, index) => (
           <div key={index} style={{ display: 'flex', gap: '0.5rem', marginTop: '5px' }}>

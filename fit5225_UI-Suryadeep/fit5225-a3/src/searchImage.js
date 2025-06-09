@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import birdsTable from './birdsTable'
 import FindFilesFromUpload from './findFIlesFromUpload';
+import FindFilesFromThumbnail from './findFilesFromThumbnail';
 
 
 function SearchImage() {
@@ -13,7 +14,7 @@ function SearchImage() {
         event.preventDefault(); 
 
         const query_params = formData.filter(entry => entry.birdName.trim() !== '').map(entry => `${encodeURIComponent(entry.birdName.trim())}=${encodeURIComponent(entry.birdCount !== '' ? entry.birdCount : 0)}`).join('&');
-        const preped_query = 'https://t6yu3oclhk.execute-api.us-east-1.amazonaws.com/prod/search?' + query_params;
+        const preped_query = 'https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/search?' + query_params;
 
         const container = document.getElementById('thumbnailurlContainer');
     
@@ -142,6 +143,9 @@ function SearchImage() {
           <FindFilesFromUpload/>
         </div>
         <div id="SimilarFilesContainer" style={{ marginTop: '2rem' }}>
+        </div>
+        <div>
+          <FindFilesFromThumbnail/>
         </div>
     
   </div>
