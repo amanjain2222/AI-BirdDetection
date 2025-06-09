@@ -234,3 +234,13 @@ def lambda_handler(event, context):
             "message": "An error occurred while processing your request",
             "error": str(e)
         })
+
+    finally:
+        # Clean up temporary files
+        for temp_path in [model_temp_path, vid_temp_path]:
+            if temp_path and os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                    print(f"Cleaned up temporary file: {temp_path}")
+                except Exception as e:
+                    print(f"Warning: Could not clean up {temp_path}: {e}")
