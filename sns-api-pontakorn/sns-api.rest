@@ -1,15 +1,15 @@
 @baseUrl = https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev
 
-###
+### Get SNS Topics List
 
 GET {{baseUrl}}/sns
 
-###
+### Subscribe to an SNS Topic
 
 POST {{baseUrl}}/sns
 Content-Type: application/json
 
 {
-    "email": "pmek0001@student.monash.edu",
-    "topicArn": "arn:aws:sns:us-east-1:831076986893:test"
+    "email": "example@email.com",
+    "topicArn": "arn:aws:sns:us-east-1:831076986893:test2"
 }
