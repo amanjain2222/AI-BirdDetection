@@ -172,6 +172,7 @@ def lambda_handler(event, context):
         print(f"Using model bucket: {model_bucket}")
         print(f"Using model key: {model_key}")
         print(f"Using confidence threshold: {confidence_threshold}")
+        print(f"Using presigned url expiration: {presigned_url_expiration}")
 
         s3 = boto3.client("s3")
         dynamodb = boto3.resource("dynamodb")
