@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import birdsTable from './birdsTable'
 import FindFilesFromUpload from './findFIlesFromUpload';
+import FindFilesFromThumbnail from './findFilesFromThumbnail';
 
 
 function SearchImage() {
@@ -142,6 +143,9 @@ function SearchImage() {
           <FindFilesFromUpload/>
         </div>
         <div id="SimilarFilesContainer" style={{ marginTop: '2rem' }}>
+        </div>
+        <div>
+          <FindFilesFromThumbnail/>
         </div>
     
   </div>
