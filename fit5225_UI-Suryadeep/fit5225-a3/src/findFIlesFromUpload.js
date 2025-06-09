@@ -42,7 +42,7 @@ function FindFilesFromUpload() {
     try {
       // if file type is audio:
       if(allowedAudios.includes(fileExtension)){
-        const process_url = 'https://t6yu3oclhk.execute-api.us-east-1.amazonaws.com/prod/search/byAudio';
+        const process_url = 'https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/search/byAudio';
 
         const response = await axios.post(process_url, 
             {
@@ -56,7 +56,7 @@ function FindFilesFromUpload() {
         });
 
         alert(`File has been processed successfully!`);
-        console.log(response.data.matching_media);
+        console.log(response.data);
 
         const results = response.data.matching_media.map( result => result.MediaURL);
 
@@ -70,7 +70,7 @@ function FindFilesFromUpload() {
       }
 
       else if(allowedImages.includes(fileExtension)){
-        const process_url = 'https://t6yu3oclhk.execute-api.us-east-1.amazonaws.com/prod/search/byImage';
+        const process_url = 'https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/search/byImage';
 
         const response = await axios.post(process_url, 
             {
@@ -83,6 +83,7 @@ function FindFilesFromUpload() {
         });
 
         alert(`File has been processed successfully!`);
+        console.log(response);
         const results = response.data.results.map( result => result.MediaURL);
 
         const table = birdsTable(results);
@@ -94,7 +95,7 @@ function FindFilesFromUpload() {
         
       }
       else if(allowedVideos.includes(fileExtension)){
-        const process_url = 'https://t6yu3oclhk.execute-api.us-east-1.amazonaws.com/prod/search/byVideo';
+        const process_url = 'https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/search/byVideo';
 
         const response = await axios.post(process_url, 
             {
@@ -141,7 +142,7 @@ function FindFilesFromUpload() {
     fontWeight: '600',
     fontSize: '1.5rem',
     textAlign: 'center'
-  }}>Find Files based on Tags of a File</h2>
+  }}>Find Files based on Files you Upload</h2>
   
   <div style={{
     display: 'flex',

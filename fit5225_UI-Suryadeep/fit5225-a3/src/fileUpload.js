@@ -34,7 +34,7 @@ function FileUpload() {
     try {
       const user_id = getUser(); // Get the user ID from your auth service
       // Step 1: Get pre-signed URL from your Lambda backend
-      const presignRes = await axios.post('https://hgznhem1gg.execute-api.us-east-1.amazonaws.com/prod/upload', {
+      const presignRes = await axios.post('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/upload', {
         file_name: file.name,
         content_type: file.type,
         userID: user_id
