@@ -21,12 +21,16 @@ def parse_tags(tags):
                     modified_tags.append({tag_name: tag_count})
     return modified_tags
 
-def find_media_by_thumbnail(thumbnail_urls, uploader = ""):
+# ✅ CHANGED: Find media IDs by MediaURL (not ThumbnailURL)
+def find_media_by_mediaurl(media_urls, uploader = ""):
     media_ids = []
-    for thumbnail_url in thumbnail_urls:
-        thumnail_url = _.clean_url(thumbnail_url)
-        thumbnail_url = _.extract_s3_url(thumbnail_url)
-        for item in BirdBaseModel.scan(BirdBaseModel.ThumbnailURL == thumbnail_url):
+    for media_url in media_urls:
+        media_url = _.clean_url(media_url)
+        media_url = _.extract_s3_url(media_url)
+        print(f"Looking for MediaURL: {media_url}")
+
+        for item in BirdBaseModel.scan(BirdBaseModel.MediaURL == media_url):
+            print(f"Found MediaID: {item.MediaID}")
             media_ids.append(item.MediaID)
     return media_ids
 
@@ -42,6 +46,7 @@ def add_tags_to_media_files(media_ids, tags):
                     item.save()
                 # add
                 except DoesNotExist:
+                    print(f"Adding new tag {tag_name}={tag_value} for MediaID={media_id}")
                     BirdBaseIndexModel(
                         TagName = tag_name,
                         MediaID = media_id,
@@ -52,11 +57,12 @@ def remove_tags_from_media_files(media_ids, tags):
     for media_id in media_ids:
         for each_tag in tags:
             for tag_name in each_tag:
-                tag_value = each_tag[tag_name]
                 try:
                     item = BirdBaseIndexModel.get(tag_name, media_id)
+                    print(f"Deleting tag {tag_name} for MediaID={media_id}")
                     item.delete()
                 except DoesNotExist:
+                    print(f"Tag {tag_name} not found for MediaID={media_id}, skipping")
                     continue
 
 def lambda_handler(event, context):
@@ -85,7 +91,7 @@ def lambda_handler(event, context):
 
         if not urls:
             return _.build_response(400, {
-                'message': 'No thumbnail URLs provided in the request body',
+                'message': 'No media URLs provided in the request body',
                 'current_urls': urls
             })
         
@@ -102,7 +108,9 @@ def lambda_handler(event, context):
             })
 
         parsed_tags = parse_tags(tags)
-        media_ids = find_media_by_thumbnail(urls)
+        
+        # ✅ CHANGE: find by MediaURL, not ThumbnailURL
+        media_ids = find_media_by_mediaurl(urls)
 
         print(f'parsed_tags: {parsed_tags}')
         print(f'media_ids: {media_ids}')
@@ -120,8 +128,8 @@ def lambda_handler(event, context):
         })
     
     except Exception as e:
+        print(f"Error: {str(e)}")
         return _.build_response(500, {
             'message': 'Internal server error',
             'error': str(e)
         })
-
