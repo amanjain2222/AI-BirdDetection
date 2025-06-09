@@ -19,7 +19,14 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-#ignore node_modules
+# Ignore node_modules
 node_modules
 /.pnp
 .pnp.js
+
+# MacOS
+.DS_Store
+
+# Ignore python venv and cache
+**/venv
+**/__pycache__
