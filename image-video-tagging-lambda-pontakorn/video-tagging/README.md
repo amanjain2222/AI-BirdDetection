@@ -43,6 +43,7 @@ S3 Bucket (Model) ←─────────┘
 | `MODEL_KEY` | S3 key path to the YOLO model file | `models/model.pt` | No |
 | `CONFIDENCE_THRESHOLD` | Confidence threshold for prediction | `0.5` | No |
 | `FRAME_SKIP` | Process every Nth frame for prediction | `1` | No |
+| `PRESIGNED_URL_EXPIRATION` | Pre-signed URL lifetime | `86400` | No |
 
 ## DynamoDB Table Schema
 

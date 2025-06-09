@@ -28,6 +28,7 @@ ENV DYNAMODB_TABLE_NAME=BirdBaseIndex
 ENV MODEL_BUCKET_NAME=birdstore
 ENV MODEL_KEY=models/model.pt
 ENV CONFIDENCE_THRESHOLD=0.5
+ENV PRESIGNED_URL_EXPIRATION=86400
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "video-tagging.lambda_handler" ]
