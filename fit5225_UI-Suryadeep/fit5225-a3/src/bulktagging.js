@@ -90,7 +90,6 @@ function BulkTagging() {
           + Add URL
         </button>
 
-        {/* Tag Fields */}
         <label style={{ marginTop: '1.5rem', display: 'block' }}>Tags (e.g., crow,1):</label>
         {tags.map((tag, index) => (
           <div key={index} style={{ display: 'flex', gap: '0.5rem', marginTop: '5px' }}>
