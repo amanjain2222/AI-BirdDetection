@@ -8,9 +8,9 @@ s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
     # Get bucket and object key from the event
-    bucket = event['Records'][0]['s3']['bucket']['name']
-    key = event['Records'][0]['s3']['object']['key']
-    # security to skip recuresion - not required but just a security step
+    bucket = event['detail']['bucket']['name']
+    key = event['detail']['object']['key']
+    # security to skip recuresion
     if key.startswith('thumbnails/'):
         return {
             'statusCode': 200,
@@ -38,7 +38,10 @@ def lambda_handler(event, context):
     thumbnail_bytes = buffer.tobytes()
 
     # Upload thumbnail to S3 under 'thumbnails/' prefix
-    thumb_key = f"thumbnails/{os.path.basename(key)}"
+    file_base_name = os.path.splitext(os.path.basename(key))[0]  # Without extension
+    thumb_key = f"thumbnails/{file_base_name}.jpg"
+
+    
     s3.put_object(Bucket=bucket, Key=thumb_key, Body=thumbnail_bytes, ContentType='image/jpeg')
 
     return {
