@@ -3,7 +3,7 @@
 
 ###
 
-POST {{baseUrlProd}}/search/byImage
+POST {{baseUrlDev}}/search/byImage
 Content-Type: application/json
 
 {

@@ -3,11 +3,11 @@
 
 ### Get SNS Topics List
 
-GET {{baseUrlProd}}/sns
+GET {{baseUrlDev}}/sns
 
 ### Subscribe to an SNS Topic
 
-POST {{baseUrlProd}}/sns
+POST {{baseUrlDev}}/sns
 Content-Type: application/json
 
 {
