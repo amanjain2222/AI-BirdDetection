@@ -8,6 +8,7 @@ function ThumbnailSearch() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    const authorizationToken = sessionStorage.getItem('idToken'); // Get the token from session storage
 
     if (!thumbnailURL.trim()) {
       setMessage("Please enter a thumbnail URL.");
@@ -19,7 +20,8 @@ function ThumbnailSearch() {
         thumbnail: thumbnailURL.trim(),
       }, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': authorizationToken // Include the authorization token
         }
       });
 

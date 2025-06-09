@@ -40,6 +40,7 @@ function FindFilesFromUpload() {
     const base64Data = await wavToBase64(file);
 
     try {
+      const authorizationToken = sessionStorage.getItem('idToken');
       // if file type is audio:
       if(allowedAudios.includes(fileExtension)){
         const process_url = 'https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/search/byAudio';
@@ -51,7 +52,8 @@ function FindFilesFromUpload() {
             }
             ,{
             headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': authorizationToken// Include the authorization token
             }
         });
 
@@ -78,7 +80,8 @@ function FindFilesFromUpload() {
             }
             ,{
             headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': authorizationToken // Include the authorization token
             }
         });
 
@@ -103,7 +106,8 @@ function FindFilesFromUpload() {
             }
             ,{
             headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': authorizationToken // Include the authorization token
             }
         });
 

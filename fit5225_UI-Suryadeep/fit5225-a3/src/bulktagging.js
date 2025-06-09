@@ -31,6 +31,7 @@ function BulkTagging() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const authorizationToken = sessionStorage.getItem('idToken');
 
     const urlArray = urls.map(u => u.value.trim()).filter(Boolean);
     const tagArray = tags.map(t => t.value.trim()).filter(Boolean);
@@ -44,7 +45,12 @@ function BulkTagging() {
     console.log('Payload:', payload);
 
     try {
-      const response = await axios.post('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/tag', payload);
+      const response = await axios.post('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/tag', payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authorizationToken, // Include the authorization token
+        }
+      });
       setMessage(`Success: ${response.data.message || 'Tags updated'}`);
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.message || error.message}`);

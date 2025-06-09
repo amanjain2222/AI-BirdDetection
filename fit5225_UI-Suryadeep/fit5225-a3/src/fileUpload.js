@@ -33,6 +33,7 @@ function FileUpload() {
 
     try {
       const user_id = getUser(); // Get the user ID from your auth service
+      const authorizationToken = sessionStorage.getItem('idToken');
       // Step 1: Get pre-signed URL from your Lambda backend
       const presignRes = await axios.post('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/upload', {
         file_name: file.name,
@@ -41,6 +42,7 @@ function FileUpload() {
       }, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': authorizationToken // Include the authorization token
         },
       });
 
@@ -50,7 +52,7 @@ function FileUpload() {
       // Step 2: Upload the file directly to S3
       await axios.put(upload_url, file, {
         headers: {
-          'Content-Type': file.type
+          'Content-Type': file.type,
         }
       });
 

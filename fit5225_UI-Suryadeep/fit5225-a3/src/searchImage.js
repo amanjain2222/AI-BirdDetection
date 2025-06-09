@@ -26,9 +26,13 @@ function SearchImage() {
             </div>
         `;
 
-        console.log(preped_query);
+        const authorizationToken = sessionStorage.getItem('idToken');
         
-        axios.get(preped_query)
+        axios.get(preped_query, {
+            headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authorizationToken}
+          })
           .then(response => {
             const results = response.data.results;
             console.log(response.data.results);

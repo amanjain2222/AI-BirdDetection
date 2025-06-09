@@ -25,6 +25,7 @@ function DeleteFiles() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const urlList = urls.map(u => u.value.trim()).filter(Boolean);
+    const authorizationToken = sessionStorage.getItem('idToken'); // Get the token from session storage
 
     if (urlList.length === 0) {
       setMessage('Please provide at least one valid URL.');
@@ -34,12 +35,14 @@ function DeleteFiles() {
     console.log('URLs to delete:', urlList);
 
     try {
+      const authorizationToken = sessionStorage.getItem('idToken');  
       const response = await axios.delete('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/media', {
         data: {
         urls: urlList
       },
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+           'Authorization': authorizationToken // Include the authorization token
         }
       });
 
