@@ -44,7 +44,7 @@ function BulkTagging() {
     console.log('Payload:', payload);
 
     try {
-      const response = await axios.post('https://ktchxqkala.execute-api.us-east-1.amazonaws.com/dev/modifyTags', payload);
+      const response = await axios.post('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/tag', payload);
       setMessage(`Success: ${response.data.message || 'Tags updated'}`);
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.message || error.message}`);

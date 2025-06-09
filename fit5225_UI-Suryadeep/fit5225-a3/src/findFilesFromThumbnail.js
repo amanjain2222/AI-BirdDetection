@@ -15,7 +15,7 @@ function ThumbnailSearch() {
     }
 
     try {
-      const response = await axios.post('https://ktchxqkala.execute-api.us-east-1.amazonaws.com/dev/search/thumbnail', {
+      const response = await axios.post('https://ynjaek8j7a.execute-api.us-east-1.amazonaws.com/dev/search/thumbnail', {
         thumbnail: thumbnailURL.trim(),
       }, {
         headers: {
@@ -25,11 +25,11 @@ function ThumbnailSearch() {
 
       console.log(response.data);
 
-      setFullImageURL(response.data.results.MediaURL);
+      setFullImageURL(response.data.results.ThumbnailURL);
       setMessage('');
     } catch (error) {
-      //setMessage(`Error: ${error.response?.data?.message || error.message}`);
-      //setFullImageURL('');
+      setMessage(`Error: ${error.response?.data?.message || error.message}`);
+      setFullImageURL('');
     }
   };
 
